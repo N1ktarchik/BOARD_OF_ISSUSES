@@ -16,7 +16,7 @@ type Task struct {
 	UserId      int
 	DeskId      int
 	Name        string
-	description string
+	Description string
 	Done        bool
 	Time        time.Time
 	Created_at  time.Time

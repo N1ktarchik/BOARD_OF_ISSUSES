@@ -114,7 +114,7 @@ func (c *connect) GetUserByLogin(ctx context.Context, login string) (*repo.User,
 
 /////////////////////////
 
-func (c *connect) GetUsersDesks(ctx context.Context, user *repo.User) ([]int, error) {
+func (c *connect) GetUserDesks(ctx context.Context, user *repo.User) ([]int, error) {
 	query := `SELECT deskid FROM desksuser WHERE userid = $1`
 
 	deskArr := make([]int, 0)
