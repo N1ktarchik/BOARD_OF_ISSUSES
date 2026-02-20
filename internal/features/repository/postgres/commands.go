@@ -15,56 +15,74 @@ type connect struct {
 }
 
 func (c *connect) CreateUser(ctx context.Context, user *repo.User) error {
-	query := `INSERT INTO users (login,password,email,name,created_at) VALUES ($1,$2,$3,$4,$5) `
+	query := `INSERT INTO users (login,password,email,name) VALUES ($1,$2,$3,$4) `
 
-	if _, err := c.db.Exec(ctx, query, user.Login, user.Password, user.Email, user.Name, user.Created_at); err != nil {
+	if _, err := c.db.Exec(ctx, query, user.Login, user.Password, user.Email, user.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) UpdateUserEmail(ctx context.Context, user *repo.User) error {
+func (c *connect) UpdateUserEmail(ctx context.Context, email string, userId int) error {
 	query := `UPDATE users SET email = $1 WHERE id = $2 `
 
-	if _, err := c.db.Exec(ctx, query, user.Email, user.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, email, userId); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) UpdateUserName(ctx context.Context, user *repo.User) error {
+func (c *connect) UpdateUserName(ctx context.Context, name string, userId int) error {
 	query := `UPDATE users SET name = $1 WHERE id = $2 `
 
-	if _, err := c.db.Exec(ctx, query, user.Name, user.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, name, userId); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) UpdateUserPassword(ctx context.Context, user *repo.User) error {
+func (c *connect) UpdateUserPassword(ctx context.Context, password string, userId int) error {
 	query := `UPDATE users SET password = $1 WHERE id = $2 `
 
-	if _, err := c.db.Exec(ctx, query, user.Password, user.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, password, userId); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) DeleteUser(ctx context.Context, user *repo.User) error {
-	query := `DELETE FROM users WHERE id = $1`
-
-	if _, err := c.db.Exec(ctx, query, user.Id); err != nil {
+func (c *connect) DeleteUser(ctx context.Context, userId string) error {
+	tx, err := c.db.Begin(ctx)
+	if err != nil {
 		return err
 	}
 
-	query = `DELETE FROM tasksusers WHERE userid = $1`
-	if _, err := c.db.Exec(ctx, query, user.Id); err != nil {
+	defer tx.Rollback(ctx)
+
+	query := `DELETE FROM deskusers WHERE userid = $1`
+	result, err := tx.Exec(ctx, query, userId)
+	if err != nil {
 		return err
 	}
+
+	if result.RowsAffected() == 0 {
+		return sql.ErrNoRows
+	}
+
+	query = `DELETE FROM users WHERE id = $1`
+	result, err = tx.Exec(ctx, query, userId)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return sql.ErrNoRows
+	}
+
+	tx.Commit(ctx)
 
 	return nil
 }
@@ -120,7 +138,7 @@ func (c *connect) CheckUserByEmailAndLogin(ctx context.Context, login, email str
 	var exists bool
 
 	err := c.db.QueryRow(ctx, query, login, email).Scan(&exists)
-	if err == sql.ErrNoRows {
+	if err != nil {
 		return false, err
 	}
 
@@ -129,12 +147,12 @@ func (c *connect) CheckUserByEmailAndLogin(ctx context.Context, login, email str
 
 /////////////////////////
 
-func (c *connect) GetUserDesks(ctx context.Context, user *repo.User) ([]int, error) {
+func (c *connect) GetUserDesks(ctx context.Context, userId int) ([]int, error) {
 	query := `SELECT deskid FROM desksuser WHERE userid = $1`
 
 	deskArr := make([]int, 0)
 
-	rows, err := c.db.Query(ctx, query, user.Id)
+	rows, err := c.db.Query(ctx, query, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -159,20 +177,19 @@ func (c *connect) GetUserDesks(ctx context.Context, user *repo.User) ([]int, err
 	return deskArr, nil
 }
 
-func (c *connect) CreateUserDesk(ctx context.Context, user *repo.User, desk *repo.Desk) error {
-	query := `INSERT INTO desksusers (userid,deskid) VALUES ($1,$2) `
+// ?
+// func (c *connect) CreateUserDesk(ctx context.Context, user *repo.User, desk *repo.Desk) error {
+// 	query := `INSERT INTO desksusers (userid,deskid) VALUES ($1,$2) `
+// 	if _, err := c.db.Exec(ctx, query, user.Id, desk.Id); err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
-	if _, err := c.db.Exec(ctx, query, user.Id, desk.Id); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *connect) DeleteUserDesk(ctx context.Context, user *repo.User, desk *repo.Desk) error {
+func (c *connect) DeleteUserDesk(ctx context.Context, userId, deskId int) error {
 	query := `DELETE FROM desksusers WHERE userid = $1 AND deskid = $2`
 
-	if _, err := c.db.Exec(ctx, query, user.Id, desk.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, userId, deskId); err != nil {
 		return err
 	}
 
@@ -182,115 +199,150 @@ func (c *connect) DeleteUserDesk(ctx context.Context, user *repo.User, desk *rep
 ///////////////////////
 
 func (c *connect) CreateDesk(ctx context.Context, desk *repo.Desk) error {
-	query := `INSERT INTO desks (name,password,created_at) VALUES ($1,$2,$3) `
-
-	if _, err := c.db.Exec(ctx, query, desk.Name, desk.Password, desk.Created_at); err != nil {
+	tx, err := c.db.Begin(ctx)
+	if err != nil {
 		return err
 	}
 
+	defer tx.Rollback(ctx)
+
+	query := `INSERT INTO desks (name,password,ownerid) VALUES ($1,$2,$3,) RETURNING id`
+	err = tx.QueryRow(ctx, query, desk.Name, desk.Password, desk.OwnerId).Scan(&desk.Id)
+	if err != nil {
+		return err
+	}
+
+	query = `INSERT INTO desksusers (userid,deskid) VALUES ($1,$2)`
+	result, err := tx.Exec(ctx, query, desk.OwnerId, desk.Id)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return sql.ErrNoRows
+	}
+
+	tx.Commit(ctx)
 	return nil
 }
 
-func (c *connect) UpdateDeskName(ctx context.Context, desk *repo.Desk) error {
+func (c *connect) UpdateDeskName(ctx context.Context, deskId int, name string) error {
 	query := `UPDATE desks SET name = $1 WHERE id = $2 `
 
-	if _, err := c.db.Exec(ctx, query, desk.Name, desk.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, name, deskId); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) UpdateDesksPassword(ctx context.Context, desk *repo.Desk) error {
+func (c *connect) UpdateDesksPassword(ctx context.Context, deskId int, password string) error {
 	query := `UPDATE desks SET password = $1 WHERE id = $2 `
 
-	if _, err := c.db.Exec(ctx, query, desk.Password, desk.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, password, deskId); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) UpdateDeskOwner(ctx context.Context, desk *repo.Desk) error {
+func (c *connect) UpdateDeskOwner(ctx context.Context, ownerid, deskid int) error {
 	query := `UPDATE desks SET ownerid = $1 WHERE id = $2 `
 
-	if _, err := c.db.Exec(ctx, query, desk.OwnerId, desk.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, ownerid, deskid); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) DeleteDesk(ctx context.Context, desk *repo.Desk) error {
-	query := `DELETE FROM desks WHERE id = $1`
+func (c *connect) DeleteDesk(ctx context.Context, deskId int) error {
+	tx, err := c.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
 
-	if _, err := c.db.Exec(ctx, query, desk.Id); err != nil {
+	query := `DELETE FROM tasksusers WHERE deskid = $1`
+	result, err := tx.Exec(ctx, query, deskId)
+	if err != nil {
 		return err
 	}
 
-	query = `DELETE FROM tasksusers WHERE deskid = $1`
-	if _, err := c.db.Exec(ctx, query, desk.Id); err != nil {
+	if result.RowsAffected() == 0 {
+		return sql.ErrNoRows
+	}
+
+	query = `DELETE FROM desks WHERE id = $1`
+	result, err = c.db.Exec(ctx, query, deskId)
+	if err != nil {
 		return err
 	}
+
+	if result.RowsAffected() == 0 {
+		return sql.ErrNoRows
+	}
+
+	tx.Commit(ctx)
 
 	return nil
 }
 
 // ////////////////////////////
 func (c *connect) CreateTask(ctx context.Context, task *repo.Task) error {
-	query := `INSERT INTO tasks (userid,deskid,name,description,time,created_at) VALUES ($1,$2,$3,$4,$5,$6) `
+	query := `INSERT INTO tasks (userid,deskid,name,description,time) VALUES ($1,$2,$3,$4,$5) `
 
-	if _, err := c.db.Exec(ctx, query, task.UserId, task.DeskId, task.Name, task.Description, task.Time, task.Created_at); err != nil {
+	if _, err := c.db.Exec(ctx, query, task.UserId, task.DeskId, task.Name, task.Description, task.Time); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) UpdateTaskDecription(ctx context.Context, task *repo.Task) error {
+func (c *connect) UpdateTaskDecription(ctx context.Context, id int, description string) error {
 	query := `UPDATE taks SET description = $1 WHERE id = $2 `
 
-	if _, err := c.db.Exec(ctx, query, task.Description, task.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, description, id); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) UpdateTaskTime(ctx context.Context, task *repo.Task) error {
+func (c *connect) UpdateTaskTime(ctx context.Context, id int, time time.Time) error {
 	query := `UPDATE taks SET time = $1 WHERE id = $2 `
 
-	if _, err := c.db.Exec(ctx, query, task.Time, task.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, time, id); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) UpdateTaskDone(ctx context.Context, task *repo.Task) error {
+func (c *connect) UpdateTaskDone(ctx context.Context, id int) error {
 	query := `UPDATE taks SET done = $1 WHERE id = $2 `
 
-	if _, err := c.db.Exec(ctx, query, true, task.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, true, id); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) DeleteTask(ctx context.Context, task *repo.Task) error {
+func (c *connect) DeleteTask(ctx context.Context, id int) error {
 	query := `DELETE FROM tasks WHERE id = $1 `
 
-	if _, err := c.db.Exec(ctx, query, task.Id); err != nil {
+	if _, err := c.db.Exec(ctx, query, id); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *connect) GetAllTasksFromOneDesk(ctx context.Context, desk *repo.Desk) ([]repo.Task, error) {
+func (c *connect) GetAllTasksFromOneDesk(ctx context.Context, deskId int) ([]repo.Task, error) {
 	query := `SELECT id,userid,deskid,name,description,done,time,created_at FROM tasks WHERE deskid = $1`
 
-	rows, err := c.db.Query(ctx, query, desk.Id)
+	rows, err := c.db.Query(ctx, query, deskId)
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +352,7 @@ func (c *connect) GetAllTasksFromOneDesk(ctx context.Context, desk *repo.Desk) (
 	tasksArr := make([]repo.Task, 0)
 
 	for rows.Next() {
-		var task repo.Task
+		task := repo.Task{}
 		err := rows.Scan(
 			&task.Id,
 			&task.UserId,
@@ -326,10 +378,10 @@ func (c *connect) GetAllTasksFromOneDesk(ctx context.Context, desk *repo.Desk) (
 	return tasksArr, nil
 }
 
-func (c *connect) GetDoneTasksFromOneDesk(ctx context.Context, desk *repo.Desk) ([]repo.Task, error) {
+func (c *connect) GetDoneTasksFromOneDesk(ctx context.Context, deskId int) ([]repo.Task, error) {
 	query := `SELECT id,userid,deskid,name,description,done,time,created_at FROM tasks WHERE deskid = $1 AND done = true`
 
-	rows, err := c.db.Query(ctx, query, desk.Id)
+	rows, err := c.db.Query(ctx, query, deskId)
 	if err != nil {
 		return nil, err
 	}
@@ -339,7 +391,7 @@ func (c *connect) GetDoneTasksFromOneDesk(ctx context.Context, desk *repo.Desk) 
 	tasksArr := make([]repo.Task, 0)
 
 	for rows.Next() {
-		var task repo.Task
+		task := repo.Task{}
 		err := rows.Scan(
 			&task.Id,
 			&task.UserId,
@@ -365,10 +417,10 @@ func (c *connect) GetDoneTasksFromOneDesk(ctx context.Context, desk *repo.Desk) 
 	return tasksArr, nil
 }
 
-func (c *connect) GetNotDoneTasksFromOneDesk(ctx context.Context, desk *repo.Desk) ([]repo.Task, error) {
+func (c *connect) GetNotDoneTasksFromOneDesk(ctx context.Context, deskId int) ([]repo.Task, error) {
 	query := `SELECT id,userid,deskid,name,description,done,time,created_at FROM tasks WHERE deskid = $1 AND done = false`
 
-	rows, err := c.db.Query(ctx, query, desk.Id)
+	rows, err := c.db.Query(ctx, query, deskId)
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +430,7 @@ func (c *connect) GetNotDoneTasksFromOneDesk(ctx context.Context, desk *repo.Des
 	tasksArr := make([]repo.Task, 0)
 
 	for rows.Next() {
-		var task repo.Task
+		task := repo.Task{}
 		err := rows.Scan(
 			&task.Id,
 			&task.UserId,
@@ -404,10 +456,10 @@ func (c *connect) GetNotDoneTasksFromOneDesk(ctx context.Context, desk *repo.Des
 	return tasksArr, nil
 }
 
-func (c *connect) GetOverdueTasksFromOneDesk(ctx context.Context, desk *repo.Desk) ([]repo.Task, error) {
-	query := `SELECT id,userid,deskid,name,description,done,time,created_at FROM tasks WHERE deskid = $1 AND time <= %2`
+func (c *connect) GetOverdueTasksFromOneDesk(ctx context.Context, deskId int) ([]repo.Task, error) {
+	query := `SELECT id,userid,deskid,name,description,done,time,created_at FROM tasks WHERE deskid = $1 AND time >= %2`
 
-	rows, err := c.db.Query(ctx, query, desk.Id, time.Now())
+	rows, err := c.db.Query(ctx, query, deskId, time.Now())
 	if err != nil {
 		return nil, err
 	}
@@ -417,7 +469,7 @@ func (c *connect) GetOverdueTasksFromOneDesk(ctx context.Context, desk *repo.Des
 	tasksArr := make([]repo.Task, 0)
 
 	for rows.Next() {
-		var task repo.Task
+		task := repo.Task{}
 		err := rows.Scan(
 			&task.Id,
 			&task.UserId,

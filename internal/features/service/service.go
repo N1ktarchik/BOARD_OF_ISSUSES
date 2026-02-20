@@ -35,20 +35,17 @@ func (s *Service) Registration(ctx context.Context, user *dn.User) (string, erro
 	if user.Login == "" {
 		return "", er.NullLogin()
 	}
-
 	if user.Password == "" {
 		return "", er.NullPassword()
 	}
-
 	if user.Name == "" {
 		return "", er.NullName()
 	}
 
 	register, err := s.repo.CheckUserByEmailAndLogin(ctx, user.Login, user.Email)
-	if err == nil {
+	if err != nil {
 		return "", err
 	}
-
 	if register {
 		return "", er.HaveRegister(user.Login)
 	}
@@ -57,8 +54,8 @@ func (s *Service) Registration(ctx context.Context, user *dn.User) (string, erro
 	if err != nil {
 		return "", err
 	}
-	user.Password = hashPassword
 
+	user.Password = hashPassword
 	if err = s.repo.CreateUser(ctx, toRepoUser(user)); err != nil {
 		return "", err
 	}
