@@ -38,3 +38,51 @@ func JWTTokenNotValid() ErrorApp {
 		Message: "JWT token not valid",
 	}
 }
+
+func NullPassword() ErrorApp {
+	return ErrorApp{
+		Code:    "PASSWORD_IS_NULL",
+		Message: "password can not be null",
+	}
+}
+
+func NullName() ErrorApp {
+	return ErrorApp{
+		Code:    "NAME_IS_NULL",
+		Message: "name can not be null",
+	}
+}
+
+func NullLogin() ErrorApp {
+	return ErrorApp{
+		Code:    "LOGIN_IS_NULL",
+		Message: "login can not be null",
+	}
+}
+
+func HaveRegister(login string) ErrorApp {
+	return ErrorApp{
+		Code:    "USER_HAVE_REGISTER",
+		Message: fmt.Sprintf("user with login %s had already registered", login),
+	}
+}
+func InvalidPassword() ErrorApp {
+	return ErrorApp{
+		Code:    "INVALID_PASSWORD",
+		Message: "invalid password",
+	}
+}
+
+func TooShortPassword() ErrorApp {
+	return ErrorApp{
+		Code:    "PASSWORD_IS_SHORT",
+		Message: "The password is too short",
+	}
+}
+
+func TooLongPassword() ErrorApp {
+	return ErrorApp{
+		Code:    "PASSWORD_IS_lONG",
+		Message: "The password is too long",
+	}
+}

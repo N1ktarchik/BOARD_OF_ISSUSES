@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	repo "Board_of_issuses/internal/features/repository"
@@ -90,12 +91,12 @@ func (c *connect) GetUserByID(ctx context.Context, id int) (*repo.User, error) {
 
 }
 
-func (c *connect) GetUserByLogin(ctx context.Context, login string) (*repo.User, error) {
-	query := `SELECT id,login,password,email,name,created_at FROM users WHERE login = $1`
+func (c *connect) GetUserByLoginOrEmail(ctx context.Context, login, email string) (*repo.User, error) {
+	query := `SELECT id,login,password,email,name,created_at FROM users WHERE login = $1 OR email = $2`
 
 	user := &repo.User{}
 
-	err := c.db.QueryRow(ctx, query, login).Scan(
+	err := c.db.QueryRow(ctx, query, login, email).Scan(
 		&user.Id,
 		&user.Login,
 		&user.Password,
@@ -110,6 +111,20 @@ func (c *connect) GetUserByLogin(ctx context.Context, login string) (*repo.User,
 
 	return user, nil
 
+}
+
+func (c *connect) CheckUserByEmailAndLogin(ctx context.Context, login, email string) (bool, error) {
+	query := `SELECT EXISTS(
+		SELECT 1 FROM users WHERE login = $1 AND email = $2)`
+
+	var exists bool
+
+	err := c.db.QueryRow(ctx, query, login, email).Scan(&exists)
+	if err == sql.ErrNoRows {
+		return false, err
+	}
+
+	return exists, nil
 }
 
 /////////////////////////

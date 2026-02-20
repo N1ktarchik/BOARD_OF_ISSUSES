@@ -9,7 +9,8 @@ type Repository interface {
 	UpdateUserPassword(ctx context.Context, user *User) error
 	DeleteUser(ctx context.Context, user *User) error
 	GetUserByID(ctx context.Context, id int) (*User, error)
-	GetUserByLogin(ctx context.Context, login string) (*User, error)
+	GetUserByLoginOrEmail(ctx context.Context, login, email string) (*User, error)
+	CheckUserByEmailAndLogin(ctx context.Context, login, email string) (bool, error)
 
 	GetUserDesks(ctx context.Context, user *User) ([]int, error)
 	CreateUserDesk(ctx context.Context, user *User, desk *Desk) error
