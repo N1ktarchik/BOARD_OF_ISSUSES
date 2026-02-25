@@ -29,3 +29,34 @@ type UserResponse struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
 }
+
+type UpdateNameRequest struct {
+	Name string `json:"name"`
+}
+
+type UpdateEmailRequest struct {
+	Email string `json:"email"`
+}
+
+type UpdatePasswordRequest struct {
+	Password string `json:"password"`
+}
+
+type Desk struct {
+	Id         int
+	Name       string
+	Password   string
+	OwnerId    int
+	Created_at time.Time
+}
+
+func (d *Desk) ToServiceDeskr() *dn.Desk {
+	return &dn.Desk{
+		Id:         d.Id,
+		Name:       d.Name,
+		Password:   d.Password,
+		OwnerId:    d.OwnerId,
+		Created_at: d.Created_at,
+	}
+
+}

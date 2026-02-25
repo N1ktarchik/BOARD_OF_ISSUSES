@@ -1,35 +1,11 @@
-package service
+package commands
 
 import (
 	er "Board_of_issuses/internal/core"
 	dn "Board_of_issuses/internal/core/domains"
-	repo "Board_of_issuses/internal/features/repository"
 	"Board_of_issuses/internal/features/service/auth"
 	"context"
 )
-
-type Service struct {
-	repo repo.Repository
-	auth auth.Auth
-}
-
-func NewService(r repo.Repository, a auth.Auth) *Service {
-	return &Service{
-		repo: r,
-		auth: a,
-	}
-}
-
-// func toRepoUser(user *dn.User) *repo.User {
-// 	return &repo.User{
-// 		Id:         user.Id,
-// 		Login:      user.Login,
-// 		Password:   user.Password,
-// 		Email:      user.Email,
-// 		Name:       user.Name,
-// 		Created_at: user.Created_at,
-// 	}
-// }
 
 func (s *Service) Registration(ctx context.Context, user *dn.User) (string, error) {
 
@@ -51,7 +27,7 @@ func (s *Service) Registration(ctx context.Context, user *dn.User) (string, erro
 		return "", err
 	}
 
-	token, err := s.auth.CreateJwt(user.Id, user.Email)
+	token, err := s.auth.Create(user.Id, user.Email)
 	if err != nil {
 		return "", err
 	}
@@ -70,11 +46,41 @@ func (s *Service) Authorization(ctx context.Context, user *dn.User) (string, err
 		return "", er.InvalidPassword()
 	}
 
-	token, err := s.auth.CreateJwt(repoUser.Id, repoUser.Email)
+	token, err := s.auth.Create(repoUser.Id, repoUser.Email)
 	if err != nil {
 		return "", err
 	}
 
 	return token, nil
 
+}
+
+func (s *Service) ChangeUserName(ctx context.Context, name string, userID int) error {
+	if err := s.repo.UpdateUserName(ctx, name, userID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) ChangeUserEmail(ctx context.Context, email string, userID int) error {
+	if err := s.repo.UpdateUserEmail(ctx, email, userID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) ChangeUserPassword(ctx context.Context, password string, userID int) error {
+
+	hashPassword, err := auth.Hash(password)
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.UpdateUserPassword(ctx, hashPassword, userID); err != nil {
+		return err
+	}
+
+	return nil
 }

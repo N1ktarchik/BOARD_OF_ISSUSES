@@ -1,0 +1,47 @@
+package commands
+
+import (
+	"context"
+)
+
+//connect desk
+
+func (c *connect) GetUserDesks(ctx context.Context, userId int) ([]int, error) {
+	query := `SELECT deskid FROM desksuser WHERE userid = $1`
+
+	deskArr := make([]int, 0)
+
+	rows, err := c.db.Query(ctx, query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var deskId int
+
+		if err := rows.Scan(&deskId); err != nil {
+			return nil, err
+		}
+
+		deskArr = append(deskArr, deskId)
+
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
+
+	}
+
+	return deskArr, nil
+}
+
+func (c *connect) DeleteUserDesk(ctx context.Context, userId, deskId int) error {
+	query := `DELETE FROM desksusers WHERE userid = $1 AND deskid = $2`
+
+	if _, err := c.db.Exec(ctx, query, userId, deskId); err != nil {
+		return err
+	}
+
+	return nil
+}

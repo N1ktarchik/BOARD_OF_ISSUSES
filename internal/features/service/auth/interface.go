@@ -5,6 +5,6 @@ import (
 )
 
 type Auth interface {
-	CreateJwt(userID int, email string) (string, error)
-	ValidateJWT(jwtToken string) (*dn.Claims, error)
+	Create(userID int, email string) (string, error)
+	Validate(jwtToken string) (*dn.Claims, error)
 }

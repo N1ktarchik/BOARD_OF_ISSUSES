@@ -21,7 +21,7 @@ func CreateJWTService(cfg *ConfigJWT) *JWTService {
 	}
 }
 
-func (s *JWTService) CreateJwt(userID int, email string) (string, error) {
+func (s *JWTService) Create(userID int, email string) (string, error) {
 	secret := s.config.SecretKey
 
 	if len(secret) == 0 {
@@ -46,7 +46,7 @@ func (s *JWTService) CreateJwt(userID int, email string) (string, error) {
 	return jwtToken, nil
 }
 
-func (s *JWTService) ValidateJWT(jwtToken string) (*dn.Claims, error) {
+func (s *JWTService) Validate(jwtToken string) (*dn.Claims, error) {
 
 	claims := &dn.Claims{}
 

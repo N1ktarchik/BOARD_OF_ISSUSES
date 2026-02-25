@@ -1,8 +1,8 @@
-package http
+package handlers
 
 import (
 	er "Board_of_issuses/internal/core"
-	dn "Board_of_issuses/internal/core/domains"
+	dto "Board_of_issuses/internal/features/transport"
 	"context"
 	"encoding/json"
 	"io"
@@ -10,29 +10,10 @@ import (
 	"time"
 )
 
-type Service interface {
-	Registration(ctx context.Context, user *dn.User) (string, error)
-	Authorization(ctx context.Context, user *dn.User) (string, error)
-}
-
-type UserHandler struct {
-	serv Service
-}
-
-func NewUserHandler(src Service) *UserHandler {
-	return &UserHandler{
-		serv: src,
-	}
-}
-
-func HandleBase(w http.ResponseWriter, r *http.Request) {
-	///главная страница с ридми
-}
-
 func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
-	var user User
+	var user dto.User
 
 	httpRequestBody, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -61,6 +42,7 @@ func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		var responseErr []byte
 
 		switch {
+
 		case er.IsError(err, "USER_HAVE_REGISTER"):
 			var appErr *er.ErrorApp = err.(*er.ErrorApp)
 			responseErr, _ = json.Marshal(appErr.Message)
@@ -70,6 +52,7 @@ func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 			var appErr *er.ErrorApp = err.(*er.ErrorApp)
 			responseErr, _ = json.Marshal(appErr.Message)
 			w.WriteHeader(http.StatusBadRequest)
+
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -81,7 +64,7 @@ func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accesToken := &UserResponse{
+	accesToken := &dto.UserResponse{
 		AccessToken: token,
 		TokenType:   "Bearer",
 	}
@@ -97,10 +80,10 @@ func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *UserHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) HandleLoginUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var user User
+	var user dto.User
 
 	httpRequestBody, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -128,10 +111,12 @@ func (h *UserHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		var responseErr []byte
 
 		switch {
+
 		case er.IsError(err, "INVALID_PASSWORD"):
 			var appErr *er.ErrorApp = err.(*er.ErrorApp)
 			responseErr, _ = json.Marshal(appErr.Message)
 			w.WriteHeader(http.StatusBadRequest)
+
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -143,7 +128,7 @@ func (h *UserHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accesToken := &UserResponse{
+	accesToken := &dto.UserResponse{
 		AccessToken: token,
 		TokenType:   "Bearer",
 	}
@@ -158,3 +143,100 @@ func (h *UserHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 
 }
+
+func (h *UserHandler) HandleChangeUserName(w http.ResponseWriter, r *http.Request) {
+	userID := getUserIDFromContext(r)
+
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	newName := &dto.UpdateNameRequest{}
+
+	if err := json.Unmarshal(reqBody, newName); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.serv.ChangeUserName(r.Context(), newName.Name, userID); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func (h *UserHandler) HandleChangeUserEmail(w http.ResponseWriter, r *http.Request) {
+	userID := getUserIDFromContext(r)
+
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	newEmail := &dto.UpdateEmailRequest{}
+
+	if err := json.Unmarshal(reqBody, newEmail); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.serv.ChangeUserEmail(r.Context(), newEmail.Email, userID); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func (h *UserHandler) HandleChangeUserPassword(w http.ResponseWriter, r *http.Request) {
+	userID := getUserIDFromContext(r)
+
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	newPassword := &dto.UpdatePasswordRequest{}
+
+	if err := json.Unmarshal(reqBody, newPassword); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = h.serv.ChangeUserEmail(r.Context(), newPassword.Password, userID)
+	if err != nil {
+
+		var responseErr []byte
+
+		switch {
+
+		case er.IsError(err, "PASSWORD_IS_SHORT"), er.IsError(err, "PASSWORD_IS_lONG"):
+			var appErr *er.ErrorApp = err.(*er.ErrorApp)
+			responseErr, _ = json.Marshal(appErr.Message)
+			w.WriteHeader(http.StatusBadRequest)
+
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		if len(responseErr) != 0 {
+			w.Write(responseErr)
+		}
+
+		return
+	}
+
+}
+
+///connect to desk user
