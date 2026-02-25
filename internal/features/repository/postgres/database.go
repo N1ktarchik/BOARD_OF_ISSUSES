@@ -66,7 +66,7 @@ func createTables(ctx context.Context, db *pgxpool.Pool) error {
 				id SERIAL PRIMARY KEY,
 				name VARCHAR(100) NOT NULL DEFAULT 'userdesk',
 				password VARCHAR(100) NOT NULL,
-				ownerid VARCHAR(100) SERIAL NOT NULL,
+				ownerid SERIAL NOT NULL,
 				created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 		
 		)`,

@@ -20,27 +20,18 @@ func NewService(r repo.Repository, a auth.Auth) *Service {
 	}
 }
 
-func toRepoUser(user *dn.User) *repo.User {
-	return &repo.User{
-		Id:         user.Id,
-		Login:      user.Login,
-		Password:   user.Password,
-		Email:      user.Email,
-		Name:       user.Name,
-		Created_at: user.Created_at,
-	}
-}
+// func toRepoUser(user *dn.User) *repo.User {
+// 	return &repo.User{
+// 		Id:         user.Id,
+// 		Login:      user.Login,
+// 		Password:   user.Password,
+// 		Email:      user.Email,
+// 		Name:       user.Name,
+// 		Created_at: user.Created_at,
+// 	}
+// }
 
 func (s *Service) Registration(ctx context.Context, user *dn.User) (string, error) {
-	if user.Login == "" {
-		return "", er.NullLogin()
-	}
-	if user.Password == "" {
-		return "", er.NullPassword()
-	}
-	if user.Name == "" {
-		return "", er.NullName()
-	}
 
 	register, err := s.repo.CheckUserByEmailAndLogin(ctx, user.Login, user.Email)
 	if err != nil {
@@ -56,7 +47,7 @@ func (s *Service) Registration(ctx context.Context, user *dn.User) (string, erro
 	}
 
 	user.Password = hashPassword
-	if err = s.repo.CreateUser(ctx, toRepoUser(user)); err != nil {
+	if err = s.repo.CreateUser(ctx, user.ToRepoUser()); err != nil {
 		return "", err
 	}
 
@@ -69,13 +60,6 @@ func (s *Service) Registration(ctx context.Context, user *dn.User) (string, erro
 }
 
 func (s *Service) Authorization(ctx context.Context, user *dn.User) (string, error) {
-	if user.Login == "" && user.Email == "" {
-		return "", er.NullLogin()
-	}
-
-	if user.Password == "" {
-		return "", er.NullPassword()
-	}
 
 	repoUser, err := s.repo.GetUserByLoginOrEmail(ctx, user.Login, user.Email)
 	if err != nil {

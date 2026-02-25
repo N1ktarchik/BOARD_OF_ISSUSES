@@ -1,6 +1,9 @@
 package core
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type ErrorApp struct {
 	Code    string
@@ -11,18 +14,14 @@ func (e ErrorApp) Error() string {
 	return fmt.Sprintf("[%s] %s", e.Code, e.Message)
 }
 
-func Validation(field, msg string) ErrorApp {
-	return ErrorApp{
-		Code:    "VALIDATION",
-		Message: fmt.Sprintf("field '%s': %s", field, msg),
-	}
-}
+func IsError(err error, code string) bool {
+	var appErr ErrorApp
 
-func EnvKeyNotFaund(field string) ErrorApp {
-	return ErrorApp{
-		Code:    "ENV_FILE_LOAD_DATA_ERROR",
-		Message: fmt.Sprintf("data: '%s' in .env file not faund. Check your key", field),
+	if errors.As(err, &appErr) {
+		return appErr.Code == code
 	}
+
+	return false
 }
 
 func JWTMethodError() ErrorApp {
@@ -39,33 +38,13 @@ func JWTTokenNotValid() ErrorApp {
 	}
 }
 
-func NullPassword() ErrorApp {
-	return ErrorApp{
-		Code:    "PASSWORD_IS_NULL",
-		Message: "password can not be null",
-	}
-}
-
-func NullName() ErrorApp {
-	return ErrorApp{
-		Code:    "NAME_IS_NULL",
-		Message: "name can not be null",
-	}
-}
-
-func NullLogin() ErrorApp {
-	return ErrorApp{
-		Code:    "LOGIN_IS_NULL",
-		Message: "login can not be null",
-	}
-}
-
 func HaveRegister(login string) ErrorApp {
 	return ErrorApp{
 		Code:    "USER_HAVE_REGISTER",
 		Message: fmt.Sprintf("user with login %s had already registered", login),
 	}
 }
+
 func InvalidPassword() ErrorApp {
 	return ErrorApp{
 		Code:    "INVALID_PASSWORD",

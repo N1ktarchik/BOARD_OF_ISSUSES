@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log"
 	"time"
 
 	er "Board_of_issuses/internal/core"
@@ -21,19 +22,10 @@ func CreateJWTService(cfg *ConfigJWT) *JWTService {
 }
 
 func (s *JWTService) CreateJwt(userID int, email string) (string, error) {
-	if userID <= 0 {
-		return "", er.Validation("user_id", "must be positive")
-	}
-
-	if len(email) == 0 {
-		return "", er.Validation("email", "can not be empty")
-	}
-
 	secret := s.config.SecretKey
 
 	if len(secret) == 0 {
-		//log
-		return "", er.EnvKeyNotFaund(string(s.config.SecretKey))
+		log.Panicf("env key not faund")
 	}
 
 	claims := dn.Claims{
