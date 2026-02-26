@@ -38,10 +38,10 @@ func JWTTokenNotValid() ErrorApp {
 	}
 }
 
-func HaveRegister(login string) ErrorApp {
+func HaveRegister(login, email string) ErrorApp {
 	return ErrorApp{
 		Code:    "USER_HAVE_REGISTER",
-		Message: fmt.Sprintf("user with login %s had already registered", login),
+		Message: fmt.Sprintf("user with login %s  or with email %s had already registered", login, email),
 	}
 }
 
@@ -63,5 +63,12 @@ func TooLongPassword() ErrorApp {
 	return ErrorApp{
 		Code:    "PASSWORD_IS_lONG",
 		Message: "The password is too long",
+	}
+}
+
+func UserNotOwnerOfDesk(userID, deskID int) ErrorApp {
+	return ErrorApp{
+		Code:    "USER_IS_NOT_OWNER",
+		Message: fmt.Sprintf("User with id %d is not owner of desk with id %d", userID, deskID),
 	}
 }

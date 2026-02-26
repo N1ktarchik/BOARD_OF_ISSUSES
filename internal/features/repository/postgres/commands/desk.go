@@ -72,7 +72,7 @@ func (c *connect) DeleteDesk(ctx context.Context, deskId int) error {
 	}
 	defer tx.Rollback(ctx)
 
-	query := `DELETE FROM tasksusers WHERE deskid = $1`
+	query := `DELETE FROM desksusers WHERE deskid = $1`
 	result, err := tx.Exec(ctx, query, deskId)
 	if err != nil {
 		return err
@@ -95,4 +95,26 @@ func (c *connect) DeleteDesk(ctx context.Context, deskId int) error {
 	tx.Commit(ctx)
 
 	return nil
+}
+
+func (c *connect) CheckDeskOwner(ctx context.Context, deskId int) (int, error) {
+	query := `SELECT ownerid FROM desks WHERE id = $1 `
+	var ownerID int
+
+	if err := c.db.QueryRow(ctx, query, deskId).Scan(&ownerID); err != nil {
+		return 0, nil
+	}
+
+	return ownerID, nil
+}
+
+func (c *connect) CheckDeskPassword(ctx context.Context, deskId int) (string, error) {
+	query := `SELECT password FROM desks WHERE id = $1 `
+	var password string
+
+	if err := c.db.QueryRow(ctx, query, deskId).Scan(&password); err != nil {
+		return "", nil
+	}
+
+	return password, nil
 }

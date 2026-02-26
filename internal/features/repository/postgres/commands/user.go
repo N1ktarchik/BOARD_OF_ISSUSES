@@ -124,9 +124,9 @@ func (c *connect) GetUserByLoginOrEmail(ctx context.Context, login, email string
 
 }
 
-func (c *connect) CheckUserByEmailAndLogin(ctx context.Context, login, email string) (bool, error) {
+func (c *connect) CheckUserByEmailOrLogin(ctx context.Context, login, email string) (bool, error) {
 	query := `SELECT EXISTS(
-		SELECT 1 FROM users WHERE login = $1 AND email = $2)`
+		SELECT 1 FROM users WHERE login = $1 OR email = $2)`
 
 	var exists bool
 

@@ -42,6 +42,11 @@ type UpdatePasswordRequest struct {
 	Password string `json:"password"`
 }
 
+type ConnectUserToDeskRequest struct {
+	ID       int    `json:"desk_id"`
+	Password string `json:"password"`
+}
+
 type Desk struct {
 	Id         int
 	Name       string
@@ -59,4 +64,23 @@ func (d *Desk) ToServiceDeskr() *dn.Desk {
 		Created_at: d.Created_at,
 	}
 
+}
+
+type UpdateDeskNameRequest struct {
+	DeskID int    `json:"desk_id"`
+	Name   string `json:"name"`
+}
+
+type UpdateDeskPasswordRequest struct {
+	DeskID   int    `json:"desk_id"`
+	Password string `json:"password"`
+}
+
+type UpdateDeskOwnerRequest struct {
+	DeskID int `json:"desk_id"`
+	ID     int `json:"new_owner_id"`
+}
+
+type DeleteDeskRequest struct {
+	ID int `json:"desk_id"`
 }

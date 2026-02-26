@@ -4,7 +4,15 @@ import (
 	"context"
 )
 
-//connect desk
+func (c *connect) ConnectUserToDesk(ctx context.Context, userID, deskID int) error {
+	query := `INSERT INTO desksusers (userid,deskid) VALUES ($1,$2)`
+
+	if _, err := c.db.Exec(ctx, query, userID, deskID); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (c *connect) GetUserDesks(ctx context.Context, userId int) ([]int, error) {
 	query := `SELECT deskid FROM desksuser WHERE userid = $1`

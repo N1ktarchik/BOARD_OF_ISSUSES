@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"strings"
 	"time"
 
 	er "Board_of_issuses/internal/core"
+	respond "Board_of_issuses/internal/features/transport/http"
 )
 
 func (h *UserHandler) AuthMiddleware(nextHandle func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
@@ -15,16 +15,14 @@ func (h *UserHandler) AuthMiddleware(nextHandle func(http.ResponseWriter, *http.
 		header := r.Header.Get("Authorization")
 
 		if header == "" {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusUnauthorized)
+			respond.RespondWithError(w, http.StatusUnauthorized, "you have been unaothorized. Please login.")
 			return
 		}
 
 		parts := strings.Split(header, " ")
 
 		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
+			respond.RespondWithError(w, http.StatusBadRequest, "token is bad data")
 			return
 		}
 
@@ -34,27 +32,18 @@ func (h *UserHandler) AuthMiddleware(nextHandle func(http.ResponseWriter, *http.
 		userID, err := h.serv.CreateJWT(ctx, parts[1])
 
 		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-
-			var responseErr []byte
 			switch {
 
 			case er.IsError(err, "TOKEN_NOT_VALID"):
 				var appErr *er.ErrorApp = err.(*er.ErrorApp)
-				responseErr, _ = json.Marshal(appErr.Message)
-				w.WriteHeader(http.StatusUnauthorized)
+				respond.RespondWithError(w, http.StatusUnauthorized, appErr.Message)
 
 			case er.IsError(err, "JWT_METHOD_NOT_VALID"):
 				var appErr *er.ErrorApp = err.(*er.ErrorApp)
-				responseErr, _ = json.Marshal(appErr.Message)
-				w.WriteHeader(http.StatusBadRequest)
+				respond.RespondWithError(w, http.StatusBadRequest, appErr.Message)
 
 			default:
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-
-			if len(responseErr) != 0 {
-				w.Write(responseErr)
+				respond.RespondWithError(w, http.StatusInternalServerError, "error to validate token.Please login.")
 			}
 
 			return

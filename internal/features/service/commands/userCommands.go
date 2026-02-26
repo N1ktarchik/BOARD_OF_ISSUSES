@@ -9,12 +9,12 @@ import (
 
 func (s *Service) Registration(ctx context.Context, user *dn.User) (string, error) {
 
-	register, err := s.repo.CheckUserByEmailAndLogin(ctx, user.Login, user.Email)
+	register, err := s.repo.CheckUserByEmailOrLogin(ctx, user.Login, user.Email)
 	if err != nil {
 		return "", err
 	}
 	if register {
-		return "", er.HaveRegister(user.Login)
+		return "", er.HaveRegister(user.Login, user.Email)
 	}
 
 	hashPassword, err := auth.Hash(user.Password)
@@ -79,6 +79,23 @@ func (s *Service) ChangeUserPassword(ctx context.Context, password string, userI
 	}
 
 	if err := s.repo.UpdateUserPassword(ctx, hashPassword, userID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) ConnectUserToDesk(ctx context.Context, userID, deskID int, password string) error {
+	validDeskPassword, err := s.repo.CheckDeskPassword(ctx, deskID)
+	if err != nil {
+		return err
+	}
+
+	if !auth.Compare(password, validDeskPassword) {
+		return er.InvalidPassword()
+	}
+
+	if err := s.repo.ConnectUserToDesk(ctx, userID, deskID); err != nil {
 		return err
 	}
 

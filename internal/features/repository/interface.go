@@ -13,8 +13,9 @@ type Repository interface {
 	DeleteUser(ctx context.Context, userId string) error
 	GetUserByID(ctx context.Context, id int) (*User, error)
 	GetUserByLoginOrEmail(ctx context.Context, login, email string) (*User, error)
-	CheckUserByEmailAndLogin(ctx context.Context, login, email string) (bool, error)
+	CheckUserByEmailOrLogin(ctx context.Context, login, email string) (bool, error)
 
+	ConnectUserToDesk(ctx context.Context, userID, deskID int) error
 	GetUserDesks(ctx context.Context, userId int) ([]int, error)
 	DeleteUserDesk(ctx context.Context, userId, deskId int) error
 
@@ -23,6 +24,8 @@ type Repository interface {
 	UpdateDesksPassword(ctx context.Context, deskId int, password string) error
 	UpdateDeskOwner(ctx context.Context, ownerid, deskid int) error
 	DeleteDesk(ctx context.Context, deskId int) error
+	CheckDeskOwner(ctx context.Context, deskId int) (int, error)
+	CheckDeskPassword(ctx context.Context, deskId int) (string, error)
 
 	CreateTask(ctx context.Context, task *Task) error
 	UpdateTaskDecription(ctx context.Context, id int, description string) error
