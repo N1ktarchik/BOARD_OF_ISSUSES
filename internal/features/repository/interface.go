@@ -18,6 +18,7 @@ type Repository interface {
 	ConnectUserToDesk(ctx context.Context, userID, deskID int) error
 	GetUserDesks(ctx context.Context, userId int) ([]int, error)
 	DeleteUserDesk(ctx context.Context, userId, deskId int) error
+	CheckUserDesk(ctx context.Context, userId, deskId int) (bool, error)
 
 	CreateDesk(ctx context.Context, desk *Desk) error
 	UpdateDeskName(ctx context.Context, deskId int, name string) error
@@ -36,4 +37,6 @@ type Repository interface {
 	GetDoneTasksFromOneDesk(ctx context.Context, deskId int) ([]Task, error)
 	GetNotDoneTasksFromOneDesk(ctx context.Context, deskId int) ([]Task, error)
 	GetOverdueTasksFromOneDesk(ctx context.Context, deskId int) ([]Task, error)
+	GetTaskOwner(ctx context.Context, taskID int) (int, error)
+	GetDeskIDByTask(ctx context.Context, taskID int) (int, error)
 }

@@ -1,4 +1,4 @@
-package commands
+package usercase
 
 import (
 	er "Board_of_issuses/internal/core"
@@ -6,6 +6,32 @@ import (
 	"Board_of_issuses/internal/features/service/auth"
 	"context"
 )
+
+func (s *Service) accessVerificationToDeskForUser(ctx context.Context, userID, deskID int) error {
+	access, err := s.repo.CheckUserDesk(ctx, userID, deskID)
+	if err != nil {
+		return err
+	}
+
+	if !access {
+		return er.UserHaveNotAccesToDesk(userID, deskID)
+	}
+
+	return nil
+}
+
+func (s *Service) accessVerificationToDeskForOwner(ctx context.Context, userID, deskID int) error {
+	ownerID, err := s.repo.CheckDeskOwner(ctx, deskID)
+	if err != nil {
+		return err
+	}
+
+	if ownerID != userID {
+		return er.UserNotOwnerOfDesk(userID, deskID)
+	}
+
+	return nil
+}
 
 func (s *Service) CreateDesk(ctx context.Context, desk *dn.Desk) error {
 
@@ -23,13 +49,8 @@ func (s *Service) CreateDesk(ctx context.Context, desk *dn.Desk) error {
 }
 
 func (s *Service) ChangeDeskName(ctx context.Context, name string, deskId, userID int) error {
-	ownerID, err := s.repo.CheckDeskOwner(ctx, deskId)
-	if err != nil {
+	if err := s.accessVerificationToDeskForOwner(ctx, userID, deskId); err != nil {
 		return err
-	}
-
-	if ownerID != userID {
-		return er.UserNotOwnerOfDesk(userID, deskId)
 	}
 
 	if err := s.repo.UpdateDeskName(ctx, deskId, name); err != nil {
@@ -40,13 +61,8 @@ func (s *Service) ChangeDeskName(ctx context.Context, name string, deskId, userI
 }
 
 func (s *Service) ChangeDeskPassword(ctx context.Context, password string, deskId, userID int) error {
-	ownerID, err := s.repo.CheckDeskOwner(ctx, deskId)
-	if err != nil {
+	if err := s.accessVerificationToDeskForOwner(ctx, userID, deskId); err != nil {
 		return err
-	}
-
-	if ownerID != userID {
-		return er.UserNotOwnerOfDesk(userID, deskId)
 	}
 
 	hashPass, err := auth.Hash(password)
@@ -62,13 +78,8 @@ func (s *Service) ChangeDeskPassword(ctx context.Context, password string, deskI
 }
 
 func (s *Service) ChangeDeskOwner(ctx context.Context, deskId, userID, newOwner int) error {
-	ownerID, err := s.repo.CheckDeskOwner(ctx, deskId)
-	if err != nil {
+	if err := s.accessVerificationToDeskForOwner(ctx, userID, deskId); err != nil {
 		return err
-	}
-
-	if ownerID != userID {
-		return er.UserNotOwnerOfDesk(userID, deskId)
 	}
 
 	if err := s.repo.UpdateDeskOwner(ctx, newOwner, deskId); err != nil {
@@ -79,13 +90,8 @@ func (s *Service) ChangeDeskOwner(ctx context.Context, deskId, userID, newOwner 
 }
 
 func (s *Service) DeleteDesk(ctx context.Context, deskId, userID int) error {
-	ownerID, err := s.repo.CheckDeskOwner(ctx, deskId)
-	if err != nil {
+	if err := s.accessVerificationToDeskForOwner(ctx, userID, deskId); err != nil {
 		return err
-	}
-
-	if ownerID != userID {
-		return er.UserNotOwnerOfDesk(userID, deskId)
 	}
 
 	if err := s.repo.DeleteDesk(ctx, deskId); err != nil {
@@ -93,4 +99,8 @@ func (s *Service) DeleteDesk(ctx context.Context, deskId, userID int) error {
 	}
 
 	return nil
+}
+
+func (s *Service) GetAllDesks(ctx context.Context, userID int) ([]int, error) {
+	return s.repo.GetUserDesks(ctx, userID)
 }

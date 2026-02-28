@@ -43,3 +43,27 @@ func (d *Desk) ToRepoDesk() *repo.Desk {
 	}
 
 }
+
+type Task struct {
+	Id          int
+	UserId      int
+	DeskId      int
+	Name        string
+	Description string
+	Done        bool
+	Time        time.Time
+	Created_at  time.Time
+}
+
+func (t *Task) ToRepoTask() *repo.Task {
+	return &repo.Task{
+		Id:          t.Id,
+		UserId:      t.UserId,
+		DeskId:      t.DeskId,
+		Name:        t.Name,
+		Description: t.Description,
+		Done:        t.Done,
+		Time:        t.Time,
+		Created_at:  t.Created_at,
+	}
+}

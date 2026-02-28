@@ -220,3 +220,14 @@ func (h *UserHandler) HandleDeleteDesk(w http.ResponseWriter, r *http.Request) {
 	respond.RespondWithJSON(w, http.StatusOK, "desk had deleted")
 
 }
+
+func (h *UserHandler) HandleGetAllDesksId(w http.ResponseWriter, r *http.Request) {
+	userID := getUserIDFromContext(r)
+
+	desksID, err := h.serv.GetAllDesks(r.Context(), userID)
+	if err != nil {
+		respond.RespondWithError(w, http.StatusInternalServerError, "error to get desks id")
+	}
+
+	respond.RespondWithJSON(w, http.StatusOK, desksID)
+}

@@ -1,4 +1,4 @@
-package commands
+package store
 
 import (
 	"context"
@@ -52,4 +52,18 @@ func (c *connect) DeleteUserDesk(ctx context.Context, userId, deskId int) error 
 	}
 
 	return nil
+}
+
+func (c *connect) CheckUserDesk(ctx context.Context, userId, deskId int) (bool, error) {
+	query := `SELECT EXISTS(
+		SELECT 1 FROM desksusers WHERE userid = $1 AND deskid = $2)`
+
+	var exists bool
+
+	err := c.db.QueryRow(ctx, query, userId, deskId).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }

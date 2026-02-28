@@ -19,6 +19,7 @@ type Service interface {
 	ChangeDeskPassword(ctx context.Context, password string, deskId, userID int) error
 	ChangeDeskOwner(ctx context.Context, deskId, userID, newOwner int) error
 	DeleteDesk(ctx context.Context, deskId, userID int) error
+	GetAllDesks(ctx context.Context, userID int) ([]int, error)
 
 	CreateJWT(ctx context.Context, jwtToken string) (int, error)
 }

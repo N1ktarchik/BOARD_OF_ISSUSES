@@ -1,4 +1,4 @@
-package commands
+package usercase
 
 import (
 	er "Board_of_issuses/internal/core"

@@ -1,4 +1,4 @@
-package commands
+package usercase
 
 import (
 	repo "Board_of_issuses/internal/features/repository"

@@ -1,4 +1,4 @@
-package commands
+package store
 
 import (
 	"context"
@@ -211,4 +211,28 @@ func (c *connect) GetOverdueTasksFromOneDesk(ctx context.Context, deskId int) ([
 	}
 
 	return tasksArr, nil
+}
+
+func (c *connect) GetTaskOwner(ctx context.Context, taskID int) (int, error) {
+	query := `SELECT userid FROM tasks WHERE id =$1`
+
+	var owner int
+
+	if err := c.db.QueryRow(ctx, query, taskID).Scan(&owner); err != nil {
+		return 0, err
+	}
+
+	return owner, nil
+}
+
+func (c *connect) GetDeskIDByTask(ctx context.Context, taskID int) (int, error) {
+	query := `SELECT dekid FROM tasks WHERE id =$1`
+
+	var deskid int
+
+	if err := c.db.QueryRow(ctx, query, taskID).Scan(&deskid); err != nil {
+		return 0, err
+	}
+
+	return deskid, nil
 }
