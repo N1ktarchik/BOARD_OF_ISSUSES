@@ -28,8 +28,6 @@ type Service interface {
 	CreateTask(ctx context.Context, task *dn.Task) error
 	GetTasksWithParams(ctx context.Context, userId, deskID int, done bool) ([]dn.Task, error)
 	GetAllTasks(ctx context.Context, userId, deskID int) ([]dn.Task, error)
-
-	CreateJWT(ctx context.Context, jwtToken string) (int, error)
 }
 
 type UserHandler struct {

@@ -12,9 +12,10 @@ type HTTPServer struct {
 	Auth     *AuthHandler
 }
 
-func NewHTTPServer(Handlers *handlers.UserHandler) *HTTPServer {
+func NewHTTPServer(Handlers *handlers.UserHandler, Auth *AuthHandler) *HTTPServer {
 	return &HTTPServer{
 		Handlers: Handlers,
+		Auth:     Auth,
 	}
 }
 
