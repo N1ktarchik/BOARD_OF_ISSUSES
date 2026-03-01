@@ -2,8 +2,8 @@ package usercase
 
 import (
 	er "Board_of_issuses/internal/core"
+	"Board_of_issuses/internal/core/auth"
 	dn "Board_of_issuses/internal/core/domains"
-	"Board_of_issuses/internal/features/service/auth"
 	"context"
 )
 

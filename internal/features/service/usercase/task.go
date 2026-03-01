@@ -39,76 +39,12 @@ func (s *Service) GetAllTasks(ctx context.Context, userId, deskID int) ([]dn.Tas
 	return servTasks, nil
 }
 
-func (s *Service) GetDoneTasks(ctx context.Context, userId, deskID int) ([]dn.Task, error) {
+func (s *Service) GetTasksWithParams(ctx context.Context, userId, deskID int, done bool) ([]dn.Task, error) {
 	if err := s.accessVerificationToDeskForUser(ctx, userId, deskID); err != nil {
 		return nil, err
 	}
 
-	repoTasks, err := s.repo.GetDoneTasksFromOneDesk(ctx, deskID)
-	if err != nil {
-		return nil, err
-	}
-
-	servTasks := make([]dn.Task, len(repoTasks))
-
-	for i := 0; i < len(repoTasks); i++ {
-		repoTask := repoTasks[i]
-
-		servTask := dn.Task{
-			Id:          repoTask.Id,
-			UserId:      repoTask.UserId,
-			DeskId:      repoTask.DeskId,
-			Name:        repoTask.Name,
-			Description: repoTask.Description,
-			Done:        repoTask.Done,
-			Time:        repoTask.Time,
-			Created_at:  repoTask.Created_at,
-		}
-
-		servTasks[i] = servTask
-	}
-
-	return servTasks, nil
-}
-
-func (s *Service) GetNotDoneTasks(ctx context.Context, userId, deskID int) ([]dn.Task, error) {
-	if err := s.accessVerificationToDeskForUser(ctx, userId, deskID); err != nil {
-		return nil, err
-	}
-
-	repoTasks, err := s.repo.GetNotDoneTasksFromOneDesk(ctx, deskID)
-	if err != nil {
-		return nil, err
-	}
-
-	servTasks := make([]dn.Task, len(repoTasks))
-
-	for i := 0; i < len(repoTasks); i++ {
-		repoTask := repoTasks[i]
-
-		servTask := dn.Task{
-			Id:          repoTask.Id,
-			UserId:      repoTask.UserId,
-			DeskId:      repoTask.DeskId,
-			Name:        repoTask.Name,
-			Description: repoTask.Description,
-			Done:        repoTask.Done,
-			Time:        repoTask.Time,
-			Created_at:  repoTask.Created_at,
-		}
-
-		servTasks[i] = servTask
-	}
-
-	return servTasks, nil
-}
-
-func (s *Service) GetOverdueTasks(ctx context.Context, userId, deskID int) ([]dn.Task, error) {
-	if err := s.accessVerificationToDeskForUser(ctx, userId, deskID); err != nil {
-		return nil, err
-	}
-
-	repoTasks, err := s.repo.GetOverdueTasksFromOneDesk(ctx, deskID)
+	repoTasks, err := s.repo.GetTasksWithParams(ctx, deskID, done)
 	if err != nil {
 		return nil, err
 	}

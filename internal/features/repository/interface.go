@@ -34,9 +34,7 @@ type Repository interface {
 	UpdateTaskDone(ctx context.Context, id int) error
 	DeleteTask(ctx context.Context, id int) error
 	GetAllTasksFromOneDesk(ctx context.Context, deskId int) ([]Task, error)
-	GetDoneTasksFromOneDesk(ctx context.Context, deskId int) ([]Task, error)
-	GetNotDoneTasksFromOneDesk(ctx context.Context, deskId int) ([]Task, error)
-	GetOverdueTasksFromOneDesk(ctx context.Context, deskId int) ([]Task, error)
+	GetTasksWithParams(ctx context.Context, deskId int, done bool) ([]Task, error)
 	GetTaskOwner(ctx context.Context, taskID int) (int, error)
 	GetDeskIDByTask(ctx context.Context, taskID int) (int, error)
 }

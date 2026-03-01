@@ -96,123 +96,6 @@ func (c *connect) GetAllTasksFromOneDesk(ctx context.Context, deskId int) ([]rep
 	return tasksArr, nil
 }
 
-func (c *connect) GetDoneTasksFromOneDesk(ctx context.Context, deskId int) ([]repo.Task, error) {
-	query := `SELECT id,userid,deskid,name,description,done,time,created_at FROM tasks WHERE deskid = $1 AND done = true`
-
-	rows, err := c.db.Query(ctx, query, deskId)
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	tasksArr := make([]repo.Task, 0)
-
-	for rows.Next() {
-		task := repo.Task{}
-		err := rows.Scan(
-			&task.Id,
-			&task.UserId,
-			&task.DeskId,
-			&task.Name,
-			&task.Description,
-			&task.Done,
-			&task.Time,
-			&task.Created_at,
-		)
-
-		if err != nil {
-			return nil, err
-		}
-
-		tasksArr = append(tasksArr, task)
-
-		if err := rows.Err(); err != nil {
-			return nil, err
-		}
-	}
-
-	return tasksArr, nil
-}
-
-func (c *connect) GetNotDoneTasksFromOneDesk(ctx context.Context, deskId int) ([]repo.Task, error) {
-	query := `SELECT id,userid,deskid,name,description,done,time,created_at FROM tasks WHERE deskid = $1 AND done = false`
-
-	rows, err := c.db.Query(ctx, query, deskId)
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	tasksArr := make([]repo.Task, 0)
-
-	for rows.Next() {
-		task := repo.Task{}
-		err := rows.Scan(
-			&task.Id,
-			&task.UserId,
-			&task.DeskId,
-			&task.Name,
-			&task.Description,
-			&task.Done,
-			&task.Time,
-			&task.Created_at,
-		)
-
-		if err != nil {
-			return nil, err
-		}
-
-		tasksArr = append(tasksArr, task)
-
-		if err := rows.Err(); err != nil {
-			return nil, err
-		}
-	}
-
-	return tasksArr, nil
-}
-
-func (c *connect) GetOverdueTasksFromOneDesk(ctx context.Context, deskId int) ([]repo.Task, error) {
-	query := `SELECT id,userid,deskid,name,description,done,time,created_at FROM tasks WHERE deskid = $1 AND time >= %2`
-
-	rows, err := c.db.Query(ctx, query, deskId, time.Now())
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	tasksArr := make([]repo.Task, 0)
-
-	for rows.Next() {
-		task := repo.Task{}
-		err := rows.Scan(
-			&task.Id,
-			&task.UserId,
-			&task.DeskId,
-			&task.Name,
-			&task.Description,
-			&task.Done,
-			&task.Time,
-			&task.Created_at,
-		)
-
-		if err != nil {
-			return nil, err
-		}
-
-		tasksArr = append(tasksArr, task)
-
-		if err := rows.Err(); err != nil {
-			return nil, err
-		}
-	}
-
-	return tasksArr, nil
-}
-
 func (c *connect) GetTaskOwner(ctx context.Context, taskID int) (int, error) {
 	query := `SELECT userid FROM tasks WHERE id =$1`
 
@@ -235,4 +118,44 @@ func (c *connect) GetDeskIDByTask(ctx context.Context, taskID int) (int, error) 
 	}
 
 	return deskid, nil
+}
+
+func (c *connect) GetTasksWithParams(ctx context.Context, deskId int, done bool) ([]repo.Task, error) {
+
+	query := `SELECT id,userid,deskid,name,description,done,time,created_at FROM tasks WHERE deskid = $1 AND done =$2`
+
+	rows, err := c.db.Query(ctx, query, deskId, done)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	tasksArr := make([]repo.Task, 0)
+
+	for rows.Next() {
+		task := repo.Task{}
+		err := rows.Scan(
+			&task.Id,
+			&task.UserId,
+			&task.DeskId,
+			&task.Name,
+			&task.Description,
+			&task.Done,
+			&task.Time,
+			&task.Created_at,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		tasksArr = append(tasksArr, task)
+
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
+	}
+
+	return tasksArr, nil
 }

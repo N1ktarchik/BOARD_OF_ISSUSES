@@ -21,6 +21,14 @@ type Service interface {
 	DeleteDesk(ctx context.Context, deskId, userID int) error
 	GetAllDesks(ctx context.Context, userID int) ([]int, error)
 
+	ComplyteTask(ctx context.Context, userID, taskID int) error
+	UpdateTaskTime(ctx context.Context, userID, taskID, userTime int) error
+	ChangeTaskDescription(ctx context.Context, userID, taskID int, description string) error
+	DeleteTask(ctx context.Context, taskID, userID int) error
+	CreateTask(ctx context.Context, task *dn.Task) error
+	GetTasksWithParams(ctx context.Context, userId, deskID int, done bool) ([]dn.Task, error)
+	GetAllTasks(ctx context.Context, userId, deskID int) ([]dn.Task, error)
+
 	CreateJWT(ctx context.Context, jwtToken string) (int, error)
 }
 

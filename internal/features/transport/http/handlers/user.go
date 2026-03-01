@@ -2,8 +2,7 @@ package handlers
 
 import (
 	er "Board_of_issuses/internal/core"
-	dto "Board_of_issuses/internal/features/transport"
-	respond "Board_of_issuses/internal/features/transport/http"
+	dto "Board_of_issuses/internal/features/transport/http/dto"
 	"context"
 	"encoding/json"
 	"io"
@@ -17,17 +16,17 @@ func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	httpRequestBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "read request body error")
+		RespondWithError(w, http.StatusInternalServerError, "read request body error")
 		return
 	}
 
 	if err := json.Unmarshal(httpRequestBody, &user); err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "parse request data error")
+		RespondWithError(w, http.StatusInternalServerError, "parse request data error")
 		return
 	}
 
 	if user.Login == "" || user.Password == "" || user.Email == "" || user.Name == "" {
-		respond.RespondWithError(w, http.StatusBadRequest, "bad user data")
+		RespondWithError(w, http.StatusBadRequest, "bad user data")
 		return
 	}
 
@@ -43,14 +42,14 @@ func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 		case er.IsError(err, "USER_HAVE_REGISTER"):
 			var appErr *er.ErrorApp = err.(*er.ErrorApp)
-			respond.RespondWithError(w, http.StatusConflict, appErr.Message)
+			RespondWithError(w, http.StatusConflict, appErr.Message)
 
 		case er.IsError(err, "PASSWORD_IS_SHORT"), er.IsError(err, "PASSWORD_IS_lONG"):
 			var appErr *er.ErrorApp = err.(*er.ErrorApp)
-			respond.RespondWithError(w, http.StatusBadRequest, appErr.Message)
+			RespondWithError(w, http.StatusBadRequest, appErr.Message)
 
 		default:
-			respond.RespondWithError(w, http.StatusInternalServerError, "error to registrate user")
+			RespondWithError(w, http.StatusInternalServerError, "error to registrate user")
 		}
 
 		return
@@ -62,7 +61,7 @@ func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, _ := json.Marshal(accesToken)
-	respond.RespondWithJSON(w, http.StatusCreated, resp)
+	RespondWithJSON(w, http.StatusCreated, resp)
 
 }
 
@@ -71,17 +70,17 @@ func (h *UserHandler) HandleLoginUser(w http.ResponseWriter, r *http.Request) {
 
 	httpRequestBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "read request body error")
+		RespondWithError(w, http.StatusInternalServerError, "read request body error")
 		return
 	}
 
 	if err := json.Unmarshal(httpRequestBody, &user); err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "parse request data error")
+		RespondWithError(w, http.StatusInternalServerError, "parse request data error")
 		return
 	}
 
 	if user.Password == "" || (user.Email == "" && user.Login == "") {
-		respond.RespondWithError(w, http.StatusBadRequest, "bad user data")
+		RespondWithError(w, http.StatusBadRequest, "bad user data")
 		return
 	}
 
@@ -97,11 +96,11 @@ func (h *UserHandler) HandleLoginUser(w http.ResponseWriter, r *http.Request) {
 		case er.IsError(err, "INVALID_PASSWORD"):
 
 			var appErr *er.ErrorApp = err.(*er.ErrorApp)
-			respond.RespondWithError(w, http.StatusBadRequest, appErr.Message)
+			RespondWithError(w, http.StatusBadRequest, appErr.Message)
 
 		default:
 
-			respond.RespondWithError(w, http.StatusInternalServerError, "error to registrate user")
+			RespondWithError(w, http.StatusInternalServerError, "error to registrate user")
 		}
 
 		return
@@ -114,7 +113,7 @@ func (h *UserHandler) HandleLoginUser(w http.ResponseWriter, r *http.Request) {
 
 	resp, _ := json.Marshal(accesToken)
 
-	respond.RespondWithJSON(w, http.StatusOK, resp)
+	RespondWithJSON(w, http.StatusOK, resp)
 
 }
 
@@ -123,23 +122,23 @@ func (h *UserHandler) HandleChangeUserName(w http.ResponseWriter, r *http.Reques
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "read request body error")
+		RespondWithError(w, http.StatusInternalServerError, "read request body error")
 		return
 	}
 
 	newName := &dto.UpdateNameRequest{}
 
 	if err := json.Unmarshal(reqBody, newName); err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "parse request data error")
+		RespondWithError(w, http.StatusInternalServerError, "parse request data error")
 		return
 	}
 
 	if err := h.serv.ChangeUserName(r.Context(), newName.Name, userID); err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "change user name error")
+		RespondWithError(w, http.StatusInternalServerError, "change user name error")
 		return
 	}
 
-	respond.RespondWithJSON(w, http.StatusOK, "user name had change")
+	RespondWithJSON(w, http.StatusOK, "user name had change")
 
 }
 
@@ -148,22 +147,22 @@ func (h *UserHandler) HandleChangeUserEmail(w http.ResponseWriter, r *http.Reque
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "read request body error")
+		RespondWithError(w, http.StatusInternalServerError, "read request body error")
 		return
 	}
 
 	newEmail := &dto.UpdateEmailRequest{}
 
 	if err := json.Unmarshal(reqBody, newEmail); err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "parse request data error")
+		RespondWithError(w, http.StatusInternalServerError, "parse request data error")
 		return
 	}
 
 	if err := h.serv.ChangeUserEmail(r.Context(), newEmail.Email, userID); err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "change user email error")
+		RespondWithError(w, http.StatusInternalServerError, "change user email error")
 	}
 
-	respond.RespondWithJSON(w, http.StatusOK, "user email had change")
+	RespondWithJSON(w, http.StatusOK, "user email had change")
 
 }
 
@@ -172,18 +171,18 @@ func (h *UserHandler) HandleChangeUserPassword(w http.ResponseWriter, r *http.Re
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "read request body error")
+		RespondWithError(w, http.StatusInternalServerError, "read request body error")
 		return
 	}
 
 	newPassword := &dto.UpdatePasswordRequest{}
 
 	if err := json.Unmarshal(reqBody, newPassword); err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "parse request data error")
+		RespondWithError(w, http.StatusInternalServerError, "parse request data error")
 		return
 	}
 
-	err = h.serv.ChangeUserEmail(r.Context(), newPassword.Password, userID)
+	err = h.serv.ChangeUserPassword(r.Context(), newPassword.Password, userID)
 	if err != nil {
 
 		switch {
@@ -191,17 +190,17 @@ func (h *UserHandler) HandleChangeUserPassword(w http.ResponseWriter, r *http.Re
 		case er.IsError(err, "PASSWORD_IS_SHORT"), er.IsError(err, "PASSWORD_IS_lONG"):
 
 			var appErr *er.ErrorApp = err.(*er.ErrorApp)
-			respond.RespondWithError(w, http.StatusBadRequest, appErr.Message)
+			RespondWithError(w, http.StatusBadRequest, appErr.Message)
 
 		default:
-			respond.RespondWithError(w, http.StatusInternalServerError, "change user password error")
+			RespondWithError(w, http.StatusInternalServerError, "change user password error")
 
 		}
 
 		return
 	}
 
-	respond.RespondWithJSON(w, http.StatusOK, "user password had change")
+	RespondWithJSON(w, http.StatusOK, "user password had change")
 
 }
 
@@ -210,19 +209,19 @@ func (h *UserHandler) HandleConnectUserToDesk(w http.ResponseWriter, r *http.Req
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "read request body error")
+		RespondWithError(w, http.StatusInternalServerError, "read request body error")
 		return
 	}
 
 	desk := &dto.ConnectUserToDeskRequest{}
 
 	if err := json.Unmarshal(reqBody, desk); err != nil {
-		respond.RespondWithError(w, http.StatusInternalServerError, "parse request data error")
+		RespondWithError(w, http.StatusInternalServerError, "parse request data error")
 		return
 	}
 
 	if desk.ID <= 0 {
-		respond.RespondWithError(w, http.StatusBadRequest, "desk_id can not be less than or equal to zero")
+		RespondWithError(w, http.StatusBadRequest, "desk_id can not be less than or equal to zero")
 		return
 	}
 
@@ -231,15 +230,15 @@ func (h *UserHandler) HandleConnectUserToDesk(w http.ResponseWriter, r *http.Req
 
 		case er.IsError(err, "PASSWORD_IS_SHORT"), er.IsError(err, "PASSWORD_IS_lONG"):
 			var appErr *er.ErrorApp = err.(*er.ErrorApp)
-			respond.RespondWithError(w, http.StatusBadRequest, appErr.Message)
+			RespondWithError(w, http.StatusBadRequest, appErr.Message)
 
 		default:
-			respond.RespondWithError(w, http.StatusInternalServerError, "error connect to desk ")
+			RespondWithError(w, http.StatusInternalServerError, "error connect to desk ")
 		}
 
 		return
 	}
 
-	respond.RespondWithJSON(w, http.StatusCreated, "you have connected to desk")
+	RespondWithJSON(w, http.StatusCreated, "you have connected to desk")
 
 }

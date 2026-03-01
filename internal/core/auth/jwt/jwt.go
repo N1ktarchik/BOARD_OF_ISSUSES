@@ -1,4 +1,4 @@
-package auth
+package jwt
 
 import (
 	"log"
@@ -68,4 +68,14 @@ func (s *JWTService) Validate(jwtToken string) (*dn.Claims, error) {
 	}
 
 	return nil, er.JWTTokenNotValid()
+}
+
+func (s *JWTService) GetUserIdFromJWT(jwtToken string) (int, error) {
+	claims, err := s.Validate(jwtToken)
+	if err != nil {
+		return 0, err
+	}
+
+	return claims.UserId, nil
+
 }

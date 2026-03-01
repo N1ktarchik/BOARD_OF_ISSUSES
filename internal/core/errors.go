@@ -82,7 +82,7 @@ func UserHaveNotAccesToDesk(userID, deskID int) ErrorApp {
 
 func UserNotOwnerOfTask(userID, taskID int) ErrorApp {
 	return ErrorApp{
-		Code:    "USER_IS_NOT_OWNER",
+		Code:    "USER_IS_NOT_OWNER_OF_TASK",
 		Message: fmt.Sprintf("User with id %d is not owner of taks with id %d", userID, taskID),
 	}
 }

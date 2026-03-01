@@ -2,8 +2,8 @@ package usercase
 
 import (
 	er "Board_of_issuses/internal/core"
+	"Board_of_issuses/internal/core/auth"
 	dn "Board_of_issuses/internal/core/domains"
-	"Board_of_issuses/internal/features/service/auth"
 	"context"
 )
 
@@ -27,7 +27,7 @@ func (s *Service) Registration(ctx context.Context, user *dn.User) (string, erro
 		return "", err
 	}
 
-	token, err := s.auth.Create(user.Id, user.Email)
+	token, err := s.auth.JWTManager.Create(user.Id, user.Email)
 	if err != nil {
 		return "", err
 	}
@@ -46,7 +46,7 @@ func (s *Service) Authorization(ctx context.Context, user *dn.User) (string, err
 		return "", er.InvalidPassword()
 	}
 
-	token, err := s.auth.Create(repoUser.Id, repoUser.Email)
+	token, err := s.auth.JWTManager.Create(repoUser.Id, repoUser.Email)
 	if err != nil {
 		return "", err
 	}
