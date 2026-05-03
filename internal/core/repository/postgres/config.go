@@ -2,7 +2,7 @@ package postgres
 
 import "time"
 
-type DatabaseConfig struct {
+type postgresConfig struct {
 	connStr           string
 	maxConns          int32
 	minConns          int32
@@ -11,8 +11,9 @@ type DatabaseConfig struct {
 	healthCheckPeriod time.Duration
 }
 
-func NewDatabaseConfig(connStr string, maxConns, minConns int32, connMaxLifetime, connMaxIdleTime, healthCheckPeriod time.Duration) *DatabaseConfig {
-	return &DatabaseConfig{
+func NewPostgresConfig(connStr string, maxConns, minConns int32, connMaxLifetime,
+	connMaxIdleTime, healthCheckPeriod time.Duration) *postgresConfig {
+	return &postgresConfig{
 		connStr:           connStr,
 		maxConns:          maxConns,
 		minConns:          minConns,

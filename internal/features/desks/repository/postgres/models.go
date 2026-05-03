@@ -1,4 +1,4 @@
-package repository
+package postgres
 
 import (
 	"N1ktarchik/Board_of_issues/internal/core/domain"

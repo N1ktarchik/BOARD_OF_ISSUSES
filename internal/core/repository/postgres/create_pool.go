@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func CreatePool(ctx context.Context, cfg *DatabaseConfig, logger *slog.Logger) (*pgxpool.Pool, error) {
+func CreatePool(ctx context.Context, cfg *postgresConfig, logger *slog.Logger) (*pgxpool.Pool, error) {
 	poolConfig, err := pgxpool.ParseConfig(cfg.connStr)
 	if err != nil {
 		logger.Error("unable to parse DSN", slog.Any("err", err))

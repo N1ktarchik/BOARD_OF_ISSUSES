@@ -8,6 +8,8 @@ import (
 	users_transport_http "N1ktarchik/Board_of_issues/internal/features/users/transport/http"
 
 	desks_repository "N1ktarchik/Board_of_issues/internal/features/desks/repository"
+	desks_storage "N1ktarchik/Board_of_issues/internal/features/desks/repository/postgres"
+	desks_cache "N1ktarchik/Board_of_issues/internal/features/desks/repository/redis"
 	desks_service "N1ktarchik/Board_of_issues/internal/features/desks/service"
 	desks_transport_http "N1ktarchik/Board_of_issues/internal/features/desks/transport/http"
 
@@ -17,6 +19,7 @@ import (
 
 	"N1ktarchik/Board_of_issues/internal/core/logger"
 	"N1ktarchik/Board_of_issues/internal/core/repository/postgres"
+	"N1ktarchik/Board_of_issues/internal/core/repository/redis"
 	"N1ktarchik/Board_of_issues/internal/core/transport/server"
 	"context"
 	"log/slog"
@@ -59,14 +62,37 @@ func main() {
 	}
 
 	connStr := postgres.GetPostgresValues()
-	config := postgres.NewDatabaseConfig(connStr, 25, 5, 30*time.Minute, 5*time.Minute, 1*time.Minute)
+	config := postgres.NewPostgresConfig(connStr, 25, 5, 30*time.Minute, 5*time.Minute, 1*time.Minute)
 	pool, err := postgres.CreatePool(context.Background(), config, log)
 	if err != nil {
 		log.Error("failed to initialize database pool", slog.Any("err", err))
 		panic(err)
 	}
 
-	log.Info("database connection pool established")
+	log.Info("postgres connection pool established")
+
+	rHost := os.Getenv("REDIS_HOST")
+	if rHost == "" {
+		rHost = "localhost"
+	}
+
+	rPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
+	if rPort == 0 {
+		rPort = 6379
+	}
+
+	rDB, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
+	rPass := os.Getenv("REDIS_PASSWORD")
+
+	redisCfg := redis.NewRedisConfig(rHost, rPort, rPass, rDB)
+	rClient, err := redis.New(redisCfg, log)
+	if err != nil {
+		log.Error("failed to initialize redis client", slog.Any("err", err))
+		panic(err)
+	}
+	defer rClient.Close()
+
+	log.Info("redis connection pool established")
 
 	jwt_liveTime := os.Getenv("JWT_LIVE_TIME")
 	jwtLiveTimeMinutes := 15
@@ -87,7 +113,9 @@ func main() {
 	usersService := users_service.NewUsersService(usersRepository, authService, log)
 	usersTransportHttp := users_transport_http.NewUsersHandler(usersService, log)
 
-	desksRepository := desks_repository.NewDesksRepository(pool, log)
+	desksStorage := desks_storage.NewDesksStorage(pool, log)
+	desksCache := desks_cache.NewDesksCache(rClient, log)
+	desksRepository := desks_repository.NewDesksRepository(desksStorage, desksCache)
 	desksService := desks_service.NewDesksService(desksRepository, log)
 	desksTransportHttp := desks_transport_http.NewDesksHandler(desksService, log)
 
