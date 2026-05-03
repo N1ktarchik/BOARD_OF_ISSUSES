@@ -19,7 +19,7 @@ func (r *DesksRepository) GetAllUsersDesks(ctx context.Context, userUUID uuid.UU
 		return nil, err
 	}
 
-	r.cache.SetUserDesks(ctx, userUUID, desks)
+	_ = r.cache.SetUserDesks(ctx, userUUID, desks)
 
 	return desks, nil
 

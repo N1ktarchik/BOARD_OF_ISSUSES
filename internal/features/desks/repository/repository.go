@@ -21,42 +21,42 @@ func NewDesksRepository(storage *postgres.DesksStorage, cache *redis.DesksCache)
 	}
 }
 
-func (c *DesksRepository) CreateDesk(ctx context.Context, desk *domain.Desk) (*domain.Desk, error) {
-	result, err := c.storage.CreateDesk(ctx, desk)
+func (r *DesksRepository) CreateDesk(ctx context.Context, desk *domain.Desk) (*domain.Desk, error) {
+	result, err := r.storage.CreateDesk(ctx, desk)
 	if err != nil {
 		return result, err
 	}
 
-	c.cache.DeleteUsersDesks(ctx, desk.OwnerId)
+	_ = r.cache.DeleteUsersDesks(ctx, desk.OwnerId)
 	return result, nil
 }
 
-func (c *DesksRepository) ChangeDesksData(ctx context.Context, deskUpdate *domain.Desk,
+func (r *DesksRepository) ChangeDesksData(ctx context.Context, deskUpdate *domain.Desk,
 	requesterID uuid.UUID) (*domain.Desk, error) {
 
-	result, err := c.storage.ChangeDesksData(ctx, deskUpdate, requesterID)
+	result, err := r.storage.ChangeDesksData(ctx, deskUpdate, requesterID)
 	if err != nil {
 		return result, err
 	}
 
-	c.cache.DeleteUsersDesks(ctx, deskUpdate.OwnerId)
+	_ = r.cache.DeleteUsersDesks(ctx, deskUpdate.OwnerId)
 	return result, nil
 }
 
-func (c *DesksRepository) DeleteDesk(ctx context.Context, userUUID, deskUUID uuid.UUID) error {
-	if err := c.storage.DeleteDesk(ctx, userUUID, deskUUID); err != nil {
+func (r *DesksRepository) DeleteDesk(ctx context.Context, userUUID, deskUUID uuid.UUID) error {
+	if err := r.storage.DeleteDesk(ctx, userUUID, deskUUID); err != nil {
 		return err
 	}
 
-	c.cache.DeleteUsersDesks(ctx, userUUID)
+	_ = r.cache.DeleteUsersDesks(ctx, userUUID)
 	return nil
 }
 
-func (c *DesksRepository) ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID) error {
-	if err := c.storage.ConnectUserToDesk(ctx, userID, deskID); err != nil {
+func (r *DesksRepository) ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID) error {
+	if err := r.storage.ConnectUserToDesk(ctx, userID, deskID); err != nil {
 		return err
 	}
 
-	c.cache.DeleteUsersDesks(ctx, userID)
+	_ = r.cache.DeleteUsersDesks(ctx, userID)
 	return nil
 }

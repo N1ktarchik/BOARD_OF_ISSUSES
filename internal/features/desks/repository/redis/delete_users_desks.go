@@ -28,6 +28,4 @@ func (c *DesksCache) DeleteUsersDesks(ctx context.Context, userUUID uuid.UUID) e
 
 	return nil
 
-	return nil
-
 }

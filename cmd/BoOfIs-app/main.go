@@ -90,7 +90,11 @@ func main() {
 		log.Error("failed to initialize redis client", slog.Any("err", err))
 		panic(err)
 	}
-	defer rClient.Close()
+	defer func() {
+		if err := rClient.Close(); err != nil {
+			log.Error("failed to close redis client", slog.Any("err", err))
+		}
+	}()
 
 	log.Info("redis connection pool established")
 
