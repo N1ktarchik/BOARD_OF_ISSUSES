@@ -170,13 +170,19 @@ info:
     url: https://t.me/n1ktarchik
   description: REST API for the Board of Issues task management system.
   title: Board Of Issues API
-  version: "2.0"
+  version: "2.1"
 paths:
   /desks:
     get:
       consumes:
       - application/json
       description: Get all desks where current user is a member or owner
+      parameters:
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -214,6 +220,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/internal_features_desks_transport_http.DeskRequestDTO'
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -257,6 +268,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/internal_features_desks_transport_http.DeskRequestDTO'
+      - description: Unique idempotency key (UUID) to prevent duplicate processing
+        in: header
+        name: X-Req-Key
+        required: true
+        type: string
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -277,7 +298,7 @@ paths:
           schema:
             $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
       security:
-      - ApiKeyAuth: []
+      - ApiKeyAuth,IdempotencyKey: []
       summary: Create a desk
       tags:
       - desks
@@ -292,6 +313,11 @@ paths:
         format: uuid
         in: path
         name: id
+        required: true
+        type: string
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -340,6 +366,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/internal_features_desks_transport_http.DeskRequestDTO'
+      - description: Unique idempotency key (UUID) to prevent duplicate processing
+        in: header
+        name: X-Req-Key
+        required: true
+        type: string
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -370,7 +406,7 @@ paths:
           schema:
             $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
       security:
-      - ApiKeyAuth: []
+      - ApiKeyAuth,IdempotencyKey: []
       summary: Join a desk
       tags:
       - desks
@@ -458,6 +494,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/internal_features_tasks_transport_http.UpdateTaskRequestDTO'
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -525,7 +566,7 @@ paths:
           schema:
             $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
       security:
-      - ApiKeyAuth: []
+      - ApiKeyAuth,IdempotencyKey: []
       summary: Create a task
       tags:
       - tasks
@@ -540,6 +581,11 @@ paths:
         format: uuid
         in: path
         name: id
+        required: true
+        type: string
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -587,6 +633,11 @@ paths:
         format: uuid
         in: path
         name: id
+        required: true
+        type: string
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -638,6 +689,11 @@ paths:
         format: uuid
         in: path
         name: taskId
+        required: true
+        type: string
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -699,6 +755,11 @@ paths:
         in: query
         name: done
         type: string
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -745,6 +806,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/internal_features_users_transport_http.UsersRequestDTO'
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -782,5 +848,10 @@ securityDefinitions:
     description: 'Enter the token in the format: Bearer <JWT_TOKEN>'
     in: header
     name: Authorization
+    type: apiKey
+  IdempotencyKey:
+    description: An idempotent key to prevent duplicates (UUID)
+    in: header
+    name: X-Req-Key
     type: apiKey
 swagger: "2.0"

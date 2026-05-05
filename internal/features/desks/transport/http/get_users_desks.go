@@ -15,6 +15,7 @@ import (
 // @Security                ApiKeyAuth
 // @Accept                  json
 // @Produce                 json
+// @Param 					Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success                 200 {array} domain.Desk "Successfully retrieved list of desks"
 // @Failure                 400 {object} resp.ErrorResponse "Possible: invalid_user_id, bad_request"
 // @Failure                 401 {object} resp.ErrorResponse "unauthorized"

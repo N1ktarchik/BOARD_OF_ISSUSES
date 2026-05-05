@@ -19,6 +19,7 @@ import (
 // @Accept                  json
 // @Produce                 json
 // @Param                   request body DeskRequestDTO true "New desk data"
+// @Param 					Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success                 200 {object} domain.Desk "Successfully updated desk information"
 // @Failure                 400 {object} resp.ErrorResponse "Possible: invalid_uuid, bad_request"
 // @Failure                 401 {object} resp.ErrorResponse "unauthorized"

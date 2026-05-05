@@ -19,6 +19,7 @@ import (
 // @Accept                  json
 // @Produce                 json
 // @Param                   request body UpdateTaskRequestDTO true "New task data"
+// @Param 					Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success                 200 {object} domain.Task "Updated task"
 // @Failure                 400 {object} resp.ErrorResponse "Possible: invalid_deadline_format, task_name_too_short"
 // @Failure                 401 {object} resp.ErrorResponse "unauthorized"

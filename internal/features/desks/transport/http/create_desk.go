@@ -16,10 +16,12 @@ import (
 // @Summary             Create a desk
 // @Description         Create a new board for tasks
 // @Tags                desks
-// @Security            ApiKeyAuth
+// @Security            ApiKeyAuth,IdempotencyKey
 // @Accept              json
 // @Produce             json
 // @Param               request body DeskRequestDTO true "Desk Info"
+// @Param 				X-Req-Key header string true "Unique idempotency key (UUID) to prevent duplicate processing"
+// @Param 				Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success             201 {object} domain.Desk "Successfully created desk"
 // @Failure             400 {object} resp.ErrorResponse "Possible: desk_name_too_short, invalid_data"
 // @Failure             401 {object} resp.ErrorResponse "unauthorized"

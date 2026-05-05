@@ -37,6 +37,15 @@ const docTemplate = `{
                     "desks"
                 ],
                 "summary": "Get my desks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successfully retrieved list of desks",
@@ -70,7 +79,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "ApiKeyAuth,IdempotencyKey": []
                     }
                 ],
                 "description": "Create a new board for tasks",
@@ -93,6 +102,20 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique idempotency key (UUID) to prevent duplicate processing",
+                        "name": "X-Req-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -148,6 +171,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -194,7 +224,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "ApiKeyAuth,IdempotencyKey": []
                     }
                 ],
                 "description": "Connect current user to a desk using desk password",
@@ -217,6 +247,20 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique idempotency key (UUID) to prevent duplicate processing",
+                        "name": "X-Req-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -288,6 +332,13 @@ const docTemplate = `{
                         "description": "DESK ID",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -448,7 +499,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "ApiKeyAuth,IdempotencyKey": []
                     }
                 ],
                 "description": "Create a new task in a specific desk",
@@ -532,6 +583,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_features_tasks_transport_http.UpdateTaskRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -621,6 +679,13 @@ const docTemplate = `{
                         "description": "Filter by task status (true/false)",
                         "name": "done",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -693,6 +758,13 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -764,6 +836,13 @@ const docTemplate = `{
                         "description": "TASK ID",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -843,6 +922,13 @@ const docTemplate = `{
                         "name": "taskId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -912,6 +998,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_features_users_transport_http.UsersRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1188,13 +1281,19 @@ const docTemplate = `{
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
+        },
+        "IdempotencyKey": {
+            "description": "An idempotent key to prevent duplicates (UUID)",
+            "type": "apiKey",
+            "name": "X-Req-Key",
+            "in": "header"
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "2.0",
+	Version:          "2.1",
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},

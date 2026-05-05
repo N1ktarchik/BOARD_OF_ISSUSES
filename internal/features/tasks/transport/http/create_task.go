@@ -16,7 +16,7 @@ import (
 // @Summary             Create a task
 // @Description         Create a new task in a specific desk
 // @Tags                tasks
-// @Security            ApiKeyAuth
+// @Security            ApiKeyAuth,IdempotencyKey
 // @Accept              json
 // @Produce             json
 // @Param               request body TaskRequestDTO true "Task Info"

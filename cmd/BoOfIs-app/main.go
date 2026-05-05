@@ -1,7 +1,9 @@
 package main
 
 import (
-	auth_service "N1ktarchik/Board_of_issues/internal/features/auth"
+	auth_service "N1ktarchik/Board_of_issues/internal/infrastructure/auth"
+	cache "N1ktarchik/Board_of_issues/internal/infrastructure/cache"
+	"net/http"
 
 	users_repository "N1ktarchik/Board_of_issues/internal/features/users/repository"
 	users_service "N1ktarchik/Board_of_issues/internal/features/users/service"
@@ -21,6 +23,7 @@ import (
 	"N1ktarchik/Board_of_issues/internal/core/repository/postgres"
 	"N1ktarchik/Board_of_issues/internal/core/repository/redis"
 	"N1ktarchik/Board_of_issues/internal/core/transport/server"
+	"N1ktarchik/Board_of_issues/internal/core/transport/server/middleware"
 	"context"
 	"log/slog"
 	"os"
@@ -31,7 +34,7 @@ import (
 )
 
 // @title           Board Of Issues API
-// @version         2.0
+// @version         2.1
 // @description     REST API for the Board of Issues task management system.
 // @contact.name    Nikita Kleymenov
 // @contact.url     https://t.me/n1ktarchik
@@ -41,6 +44,11 @@ import (
 // @in                          header
 // @name                        Authorization
 // @description                 Enter the token in the format: Bearer <JWT_TOKEN>
+
+// @securityDefinitions.apikey IdempotencyKey
+// @in                          header
+// @name                        X-Req-Key
+// @description                 An idempotent key to prevent duplicates (UUID)
 
 // @host            localhost:8080
 // @BasePath        /
@@ -112,6 +120,7 @@ func main() {
 	}
 
 	authService := auth_service.CreateJWTService(secret, log, jwtLiveTimeMinutes)
+	cacheRepository := cache.NewCacheRepository(rClient, log)
 
 	usersRepository := users_repository.NewUsersRepository(pool, log)
 	usersService := users_service.NewUsersService(usersRepository, authService, log)
@@ -127,7 +136,7 @@ func main() {
 	tasksService := tasks_service.NewTasksService(tasksRepository, log)
 	tasksTransportHttp := tasks_transport_http.NewTasksHandler(tasksService, log)
 
-	mw := server.NewMiddleWare(authService, log)
+	mw := middleware.NewMiddleWare(authService, cacheRepository, log)
 	srv := server.NewServer(log)
 	srv.RegisterSwagger()
 	r := srv.Router
@@ -140,13 +149,13 @@ func main() {
 
 	api.HandleFunc("/users", usersTransportHttp.ChangesUserData).Methods("PATCH")
 
-	api.HandleFunc("/desks", desksTransportHttp.CreateDesk).Methods("POST")
+	api.Handle("/desks", mw.IdempotencyMiddleware(http.HandlerFunc(desksTransportHttp.CreateDesk))).Methods("POST")
 	api.HandleFunc("/desks/{id}", desksTransportHttp.DeleteDesk).Methods("DELETE")
 	api.HandleFunc("/desks", desksTransportHttp.GetUsersDesks).Methods("GET")
-	api.HandleFunc("/desks/connect", desksTransportHttp.ConnectUserToDesk).Methods("POST")
+	api.Handle("/desks/connect", mw.IdempotencyMiddleware(http.HandlerFunc(desksTransportHttp.ConnectUserToDesk))).Methods("POST")
 	api.HandleFunc("/desks", desksTransportHttp.ChangeDeskData).Methods("PATCH")
 
-	api.HandleFunc("/tasks", tasksTransportHttp.CreateTask).Methods("POST")
+	api.Handle("/tasks", mw.IdempotencyMiddleware(http.HandlerFunc(tasksTransportHttp.CreateTask))).Methods("POST")
 	api.HandleFunc("/tasks/{id}/complete", tasksTransportHttp.CompleteTask).Methods("PATCH")
 	api.HandleFunc("/tasks", tasksTransportHttp.ChangeTaskData).Methods("PATCH")
 	api.HandleFunc("/tasks/{id}", tasksTransportHttp.DeleteTask).Methods("DELETE")

@@ -1,4 +1,4 @@
-package server
+package middleware
 
 import (
 	"N1ktarchik/Board_of_issues/internal/core/domain"
@@ -9,24 +9,6 @@ import (
 	"net/http"
 	"strings"
 )
-
-type AuthService interface {
-	CreateJWT(userID string) (string, error)
-	GetUserIdFromJWT(JWT string) (string, error)
-	ValidateJWT(JWT string) (*domain.Claims, error)
-}
-
-type MiddleWare struct {
-	authService AuthService
-	log         *slog.Logger
-}
-
-func NewMiddleWare(authService AuthService, log *slog.Logger) *MiddleWare {
-	return &MiddleWare{
-		authService: authService,
-		log:         log,
-	}
-}
 
 func (m *MiddleWare) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -50,6 +32,12 @@ func (m *MiddleWare) AuthMiddleware(next http.Handler) http.Handler {
 		if err != nil {
 			m.log.Warn("auth middleware: jwt validation failed", slog.Any("err", err))
 			resp.RespondWithError(w, err)
+			return
+		}
+
+		if claims.ID == "" {
+			m.log.Warn("auth middleware: id not set")
+			resp.RespondWithError(w, errors.BadRequest())
 			return
 		}
 

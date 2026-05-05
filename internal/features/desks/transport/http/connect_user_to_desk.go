@@ -16,10 +16,12 @@ import (
 // @Summary                 Join a desk
 // @Description             Connect current user to a desk using desk password
 // @Tags                    desks
-// @Security                ApiKeyAuth
+// @Security            	ApiKeyAuth,IdempotencyKey
 // @Accept                  json
 // @Produce                 json
 // @Param                   request body DeskRequestDTO true "Desk ID and Password"
+// @Param 					X-Req-Key header string true "Unique idempotency key (UUID) to prevent duplicate processing"
+// @Param					Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success                 201 {object} map[string]string "message: you have connected to desk"
 // @Failure                 400 {object} resp.ErrorResponse "Possible: invalid_data, bad_request"
 // @Failure                 401 {object} resp.ErrorResponse "unauthorized"
