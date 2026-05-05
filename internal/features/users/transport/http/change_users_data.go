@@ -25,9 +25,9 @@ import (
 // @Failure                 404 {object} resp.ErrorResponse "user_not_found"
 // @Failure                 409 {object} resp.ErrorResponse "email_already_exists"
 // @Failure                 500 {object} resp.ErrorResponse "internal_server_error"
-// @Router                  /users/update [patch]
+// @Router                  /users [patch]
 func (h *UsersHandler) ChangesUserData(w http.ResponseWriter, r *http.Request) {
-	h.log.Info("new request", slog.String("path", "/users/update"))
+	h.log.Info("new request", slog.String("path", "/users"))
 	ctx := r.Context()
 	userIdStr, ok := domain.GetUserID(ctx)
 

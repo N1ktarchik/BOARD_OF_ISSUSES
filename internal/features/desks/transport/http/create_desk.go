@@ -24,9 +24,9 @@ import (
 // @Failure             400 {object} resp.ErrorResponse "Possible: desk_name_too_short, invalid_data"
 // @Failure             401 {object} resp.ErrorResponse "unauthorized"
 // @Failure             500 {object} resp.ErrorResponse "internal_server_error"
-// @Router              /desks/create [post]
+// @Router              /desks [post]
 func (h *DesksHandler) CreateDesk(w http.ResponseWriter, r *http.Request) {
-	h.log.Info("new request", slog.String("path", "/desks/create"))
+	h.log.Info("new request", slog.String("path", "/desks"))
 
 	ctx := r.Context()
 	userIdStr, ok := domain.GetUserID(ctx)

@@ -138,17 +138,17 @@ func main() {
 	api := r.PathPrefix("/").Subrouter()
 	api.Use(mw.AuthMiddleware)
 
-	api.HandleFunc("/users/update", usersTransportHttp.ChangesUserData).Methods("PATCH")
+	api.HandleFunc("/users", usersTransportHttp.ChangesUserData).Methods("PATCH")
 
-	api.HandleFunc("/desks/create", desksTransportHttp.CreateDesk).Methods("POST")
+	api.HandleFunc("/desks", desksTransportHttp.CreateDesk).Methods("POST")
 	api.HandleFunc("/desks/{id}", desksTransportHttp.DeleteDesk).Methods("DELETE")
-	api.HandleFunc("/desks/my", desksTransportHttp.GetUsersDesks).Methods("GET")
+	api.HandleFunc("/desks", desksTransportHttp.GetUsersDesks).Methods("GET")
 	api.HandleFunc("/desks/connect", desksTransportHttp.ConnectUserToDesk).Methods("POST")
-	api.HandleFunc("/desks/update", desksTransportHttp.ChangeDeskData).Methods("PATCH")
+	api.HandleFunc("/desks", desksTransportHttp.ChangeDeskData).Methods("PATCH")
 
-	api.HandleFunc("/tasks/create", tasksTransportHttp.CreateTask).Methods("POST")
+	api.HandleFunc("/tasks", tasksTransportHttp.CreateTask).Methods("POST")
 	api.HandleFunc("/tasks/{id}/complete", tasksTransportHttp.CompleteTask).Methods("PATCH")
-	api.HandleFunc("/tasks/update", tasksTransportHttp.ChangeTaskData).Methods("PATCH")
+	api.HandleFunc("/tasks", tasksTransportHttp.ChangeTaskData).Methods("PATCH")
 	api.HandleFunc("/tasks/{id}", tasksTransportHttp.DeleteTask).Methods("DELETE")
 	api.HandleFunc("/tasks/all/{deskId}", tasksTransportHttp.GetTasksFromOneDesk).Methods("GET")
 	api.HandleFunc("/tasks/{taskId}", tasksTransportHttp.GetTaskByID).Methods("GET")

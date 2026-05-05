@@ -19,6 +19,177 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/desks": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all desks where current user is a member or owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "desks"
+                ],
+                "summary": "Get my desks",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved list of desks",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: invalid_user_id, bad_request",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new board for tasks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "desks"
+                ],
+                "summary": "Create a desk",
+                "parameters": [
+                    {
+                        "description": "Desk Info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully created desk",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: desk_name_too_short, invalid_data",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update desk name or password (must be owner)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "desks"
+                ],
+                "summary": "Update desk info",
+                "parameters": [
+                    {
+                        "description": "New desk data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated desk information",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: invalid_uuid, bad_request",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "not_an_owner",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "desk_not_found",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/desks/connect": {
             "post": {
                 "security": [
@@ -78,181 +249,6 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "already_a_member",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/desks/create": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create a new board for tasks",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "desks"
-                ],
-                "summary": "Create a desk",
-                "parameters": [
-                    {
-                        "description": "Desk Info",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Successfully created desk",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: desk_name_too_short, invalid_data",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/desks/my": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get all desks where current user is a member or owner",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "desks"
-                ],
-                "summary": "Get my desks",
-                "responses": {
-                    "200": {
-                        "description": "Successfully retrieved list of desks",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: invalid_user_id, bad_request",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/desks/update": {
-            "patch": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Update desk name or password (must be owner)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "desks"
-                ],
-                "summary": "Update desk info",
-                "parameters": [
-                    {
-                        "description": "New desk data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully updated desk information",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: invalid_uuid, bad_request",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "not_an_owner",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "desk_not_found",
                         "schema": {
                             "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
                         }
@@ -448,6 +444,136 @@ const docTemplate = `{
                 }
             }
         },
+        "/tasks": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new task in a specific desk",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Create a task",
+                "parameters": [
+                    {
+                        "description": "Task Info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_tasks_transport_http.TaskRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created Task",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: task_name_too_short, invalid_desk_id",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "desk_not_found",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update task name, description or deadline",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Update task",
+                "parameters": [
+                    {
+                        "description": "New task data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_tasks_transport_http.UpdateTaskRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated task",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: invalid_deadline_format, task_name_too_short",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "not_a_desk_member",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "task_not_found",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tasks/all/{deskId}": {
             "get": {
                 "security": [
@@ -527,138 +653,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "desk_not_found",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/tasks/create": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create a new task in a specific desk",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tasks"
-                ],
-                "summary": "Create a task",
-                "parameters": [
-                    {
-                        "description": "Task Info",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_tasks_transport_http.TaskRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created Task",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task"
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: task_name_too_short, invalid_desk_id",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "desk_not_found",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/tasks/update": {
-            "patch": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Update task name, description or deadline",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tasks"
-                ],
-                "summary": "Update task",
-                "parameters": [
-                    {
-                        "description": "New task data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_tasks_transport_http.UpdateTaskRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Updated task",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task"
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: invalid_deadline_format, task_name_too_short",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "not_a_desk_member",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "task_not_found",
                         "schema": {
                             "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
                         }
@@ -891,7 +885,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/update": {
+        "/users": {
             "patch": {
                 "security": [
                     {

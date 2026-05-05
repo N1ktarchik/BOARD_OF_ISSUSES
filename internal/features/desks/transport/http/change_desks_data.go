@@ -25,9 +25,9 @@ import (
 // @Failure                 403 {object} resp.ErrorResponse "not_an_owner"
 // @Failure                 404 {object} resp.ErrorResponse "desk_not_found"
 // @Failure                 500 {object} resp.ErrorResponse "internal_server_error"
-// @Router                  /desks/update [patch]
+// @Router                  /desks [patch]
 func (h *DesksHandler) ChangeDeskData(w http.ResponseWriter, r *http.Request) {
-	h.log.Info("new request", slog.String("path", "/desks/update"))
+	h.log.Info("new request", slog.String("path", "/desks"))
 
 	ctx := r.Context()
 	userIdStr, ok := domain.GetUserID(ctx)

@@ -25,9 +25,9 @@ import (
 // @Failure                 403 {object} resp.ErrorResponse "not_a_desk_member"
 // @Failure                 404 {object} resp.ErrorResponse "task_not_found"
 // @Failure                 500 {object} resp.ErrorResponse "internal_server_error"
-// @Router                  /tasks/update [patch]
+// @Router                  /tasks [patch]
 func (h *TasksHandler) ChangeTaskData(w http.ResponseWriter, r *http.Request) {
-	h.log.Info("new request", slog.String("path", "/tasks/update"))
+	h.log.Info("new request", slog.String("path", "/tasks"))
 
 	ctx := r.Context()
 	userIdStr, ok := domain.GetUserID(ctx)

@@ -25,10 +25,10 @@ import (
 // @Failure             401 {object} resp.ErrorResponse "unauthorized"
 // @Failure             404 {object} resp.ErrorResponse "desk_not_found"
 // @Failure             500 {object} resp.ErrorResponse "internal_server_error"
-// @Router              /tasks/create [post]
+// @Router              /tasks [post]
 func (h *TasksHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 
-	h.log.Info("new request", slog.String("path", "/tasks/create"))
+	h.log.Info("new request", slog.String("path", "/tasks"))
 
 	ctx := r.Context()
 	authorIdStr, ok := domain.GetUserID(ctx)

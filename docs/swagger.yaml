@@ -172,6 +172,115 @@ info:
   title: Board Of Issues API
   version: "2.0"
 paths:
+  /desks:
+    get:
+      consumes:
+      - application/json
+      description: Get all desks where current user is a member or owner
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved list of desks
+          schema:
+            items:
+              $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk'
+            type: array
+        "400":
+          description: 'Possible: invalid_user_id, bad_request'
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get my desks
+      tags:
+      - desks
+    patch:
+      consumes:
+      - application/json
+      description: Update desk name or password (must be owner)
+      parameters:
+      - description: New desk data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_desks_transport_http.DeskRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated desk information
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk'
+        "400":
+          description: 'Possible: invalid_uuid, bad_request'
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "403":
+          description: not_an_owner
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "404":
+          description: desk_not_found
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update desk info
+      tags:
+      - desks
+    post:
+      consumes:
+      - application/json
+      description: Create a new board for tasks
+      parameters:
+      - description: Desk Info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_desks_transport_http.DeskRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created desk
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk'
+        "400":
+          description: 'Possible: desk_name_too_short, invalid_data'
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a desk
+      tags:
+      - desks
   /desks/{id}:
     delete:
       consumes:
@@ -265,117 +374,6 @@ paths:
       summary: Join a desk
       tags:
       - desks
-  /desks/create:
-    post:
-      consumes:
-      - application/json
-      description: Create a new board for tasks
-      parameters:
-      - description: Desk Info
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_features_desks_transport_http.DeskRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Successfully created desk
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk'
-        "400":
-          description: 'Possible: desk_name_too_short, invalid_data'
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "401":
-          description: unauthorized
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "500":
-          description: internal_server_error
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Create a desk
-      tags:
-      - desks
-  /desks/my:
-    get:
-      consumes:
-      - application/json
-      description: Get all desks where current user is a member or owner
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully retrieved list of desks
-          schema:
-            items:
-              $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk'
-            type: array
-        "400":
-          description: 'Possible: invalid_user_id, bad_request'
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "401":
-          description: unauthorized
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "500":
-          description: internal_server_error
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get my desks
-      tags:
-      - desks
-  /desks/update:
-    patch:
-      consumes:
-      - application/json
-      description: Update desk name or password (must be owner)
-      parameters:
-      - description: New desk data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_features_desks_transport_http.DeskRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully updated desk information
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk'
-        "400":
-          description: 'Possible: invalid_uuid, bad_request'
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "401":
-          description: unauthorized
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "403":
-          description: not_an_owner
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "404":
-          description: desk_not_found
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "500":
-          description: internal_server_error
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Update desk info
-      tags:
-      - desks
   /login:
     post:
       consumes:
@@ -448,6 +446,89 @@ paths:
       summary: Register a new user
       tags:
       - users
+  /tasks:
+    patch:
+      consumes:
+      - application/json
+      description: Update task name, description or deadline
+      parameters:
+      - description: New task data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_tasks_transport_http.UpdateTaskRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated task
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task'
+        "400":
+          description: 'Possible: invalid_deadline_format, task_name_too_short'
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "403":
+          description: not_a_desk_member
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "404":
+          description: task_not_found
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update task
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: Create a new task in a specific desk
+      parameters:
+      - description: Task Info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_tasks_transport_http.TaskRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created Task
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task'
+        "400":
+          description: 'Possible: task_name_too_short, invalid_desk_id'
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "404":
+          description: desk_not_found
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a task
+      tags:
+      - tasks
   /tasks/{id}:
     delete:
       consumes:
@@ -652,91 +733,7 @@ paths:
       summary: Get desk tasks
       tags:
       - tasks
-  /tasks/create:
-    post:
-      consumes:
-      - application/json
-      description: Create a new task in a specific desk
-      parameters:
-      - description: Task Info
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_features_tasks_transport_http.TaskRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created Task
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task'
-        "400":
-          description: 'Possible: task_name_too_short, invalid_desk_id'
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "401":
-          description: unauthorized
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "404":
-          description: desk_not_found
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "500":
-          description: internal_server_error
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Create a task
-      tags:
-      - tasks
-  /tasks/update:
-    patch:
-      consumes:
-      - application/json
-      description: Update task name, description or deadline
-      parameters:
-      - description: New task data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_features_tasks_transport_http.UpdateTaskRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Updated task
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task'
-        "400":
-          description: 'Possible: invalid_deadline_format, task_name_too_short'
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "401":
-          description: unauthorized
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "403":
-          description: not_a_desk_member
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "404":
-          description: task_not_found
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-        "500":
-          description: internal_server_error
-          schema:
-            $ref: '#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Update task
-      tags:
-      - tasks
-  /users/update:
+  /users:
     patch:
       consumes:
       - application/json
