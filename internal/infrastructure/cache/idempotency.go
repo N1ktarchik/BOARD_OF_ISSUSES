@@ -4,23 +4,10 @@ import (
 	"N1ktarchik/Board_of_issues/internal/core/domain"
 	"context"
 	"encoding/json"
-	"log/slog"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
-
-type CacheRepository struct {
-	db  *redis.Client
-	log *slog.Logger
-}
-
-func NewCacheRepository(db *redis.Client, log *slog.Logger) *CacheRepository {
-	return &CacheRepository{
-		db:  db,
-		log: log,
-	}
-}
 
 func (r *CacheRepository) Get(ctx context.Context, key string) (*domain.IdempotencyRecord, error) {
 	data, err := r.db.Get(ctx, key).Result()

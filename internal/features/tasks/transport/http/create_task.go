@@ -20,6 +20,8 @@ import (
 // @Accept              json
 // @Produce             json
 // @Param               request body TaskRequestDTO true "Task Info"
+// @Param 				X-Req-Key header string true "Unique idempotency key (UUID) to prevent duplicate processing"
+// @Param 				Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success             201 {object} domain.Task "Created Task"
 // @Failure             400 {object} resp.ErrorResponse "Possible: task_name_too_short, invalid_desk_id"
 // @Failure             401 {object} resp.ErrorResponse "unauthorized"

@@ -45,7 +45,7 @@ import (
 // @name                        Authorization
 // @description                 Enter the token in the format: Bearer <JWT_TOKEN>
 
-// @securityDefinitions.apikey IdempotencyKey
+// @securityDefinitions.apikey 	IdempotencyKey
 // @in                          header
 // @name                        X-Req-Key
 // @description                 An idempotent key to prevent duplicates (UUID)
@@ -146,6 +146,7 @@ func main() {
 
 	api := r.PathPrefix("/").Subrouter()
 	api.Use(mw.AuthMiddleware)
+	api.Use(mw.RateLimitMiddleware)
 
 	api.HandleFunc("/users", usersTransportHttp.ChangesUserData).Methods("PATCH")
 

@@ -14,14 +14,14 @@ func (m *MiddleWare) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			m.log.Warn("auth middleware: missing authorization header")
+			m.log.Debug("auth middleware: missing authorization header")
 			resp.RespondWithError(w, errors.BadRequest())
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			m.log.Warn("auth middleware: invalid authorization format", slog.String("header", authHeader))
+			m.log.Debug("auth middleware: invalid authorization format", slog.String("header", authHeader))
 			resp.RespondWithError(w, errors.BadRequest())
 			return
 		}

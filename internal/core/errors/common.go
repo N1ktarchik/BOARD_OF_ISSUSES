@@ -27,6 +27,8 @@ func (e *ErrorApp) StatusCode() int {
 		return http.StatusConflict
 	case "USER_NOT_FOUND", "DESK_NOT_FOUND", "TASK_NOT_FOUND":
 		return http.StatusNotFound
+	case "TOO_MANY_REQUESTS":
+		return http.StatusTooManyRequests
 	default:
 		return http.StatusInternalServerError
 	}
@@ -157,5 +159,12 @@ func TaskNotFound() *ErrorApp {
 	return &ErrorApp{
 		Code:    "TASK_NOT_FOUND",
 		Message: "task not found",
+	}
+}
+
+func TooManyRequests(userID string) *ErrorApp {
+	return &ErrorApp{
+		Code:    "TOO_MANY_REQUESTS",
+		Message: fmt.Sprintf("User with id %s has made too many requests", userID),
 	}
 }

@@ -18,6 +18,7 @@ type AuthService interface {
 type Cache interface {
 	Get(ctx context.Context, key string) (*domain.IdempotencyRecord, error)
 	Set(ctx context.Context, key string, data *domain.IdempotencyRecord, TTL time.Duration) error
+	RateLimit(ctx context.Context, userID string, limit int, window time.Duration) (bool, error)
 }
 
 type MiddleWare struct {
