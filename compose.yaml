@@ -12,6 +12,10 @@ services:
       - POSTGRES_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
       - SECRET_KEY=${SECRET_KEY}
       - JWT_LIVE_TIME=${JWT_LIVE_TIME}
+      - REDIS_HOST=redis
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=0
     ports:
       - "8080:8080"
     depends_on:
@@ -19,6 +23,8 @@ services:
         condition: service_healthy
       postgres-migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     restart: always
 
   postgres:
@@ -38,6 +44,7 @@ services:
       timeout: 5s
       retries: 5
     restart: always
+
   postgres-migrate:
     image: migrate/migrate:v4.19.1
     volumes:
@@ -50,6 +57,21 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    container_name: BoOfIs-app-env-redis
+    ports:
+      - "6379:6379" 
+    volumes:
+      - ./out/redisdata:/data 
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: always
+
   swagger:
     build:
       context: .

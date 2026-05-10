@@ -19,6 +19,7 @@ import (
 // @Accept              json
 // @Produce             json
 // @Param               id path string true "DESK ID" format(uuid) example("550e8400-e29b-41d4-a716-446655440000")
+// @Param 				Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success             200 {object} map[string]string "message: desk with ID ... has been deleted"
 // @Failure             400 {object} resp.ErrorResponse "Possible: invalid_uuid, bad_request"
 // @Failure             401 {object} resp.ErrorResponse "unauthorized"

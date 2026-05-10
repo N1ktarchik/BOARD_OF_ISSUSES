@@ -23,6 +23,7 @@ import (
 // @Param        			page    query     int     false  "Page number (1-100, default 1)"
 // @Param       			limit   query     int     false  "Tasks per page (1-50, default 20)"
 // @Param       			done    query     string  false  "Filter by task status (true/false)" Enums(true, false)
+// @Param 					Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success      			200     {array}   domain.Task "Successfully retrieved list of tasks"
 // @Failure      			400     {object}  resp.ErrorResponse "Possible: invalid_uuid, bad_request"
 // @Failure      			401     {object}  resp.ErrorResponse "unauthorized"
@@ -117,6 +118,7 @@ func (h *TasksHandler) GetTasksFromOneDesk(w http.ResponseWriter, r *http.Reques
 // @Accept       	json
 // @Produce      	json
 // @Param        	taskId  path      string  true  "Task UUID"  format(uuid)  example("550e8400-e29b-41d4-a716-446655440000")
+// @Param 			Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success      	200     {object}  domain.Task "Task information retrieved successfully"
 // @Failure      	400     {object}  resp.ErrorResponse "Possible: invalid_uuid, bad_request"
 // @Failure      	401     {object}  resp.ErrorResponse "unauthorized"

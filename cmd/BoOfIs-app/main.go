@@ -1,13 +1,17 @@
 package main
 
 import (
-	auth_service "N1ktarchik/Board_of_issues/internal/features/auth"
+	auth_service "N1ktarchik/Board_of_issues/internal/infrastructure/auth"
+	cache "N1ktarchik/Board_of_issues/internal/infrastructure/cache"
+	"net/http"
 
 	users_repository "N1ktarchik/Board_of_issues/internal/features/users/repository"
 	users_service "N1ktarchik/Board_of_issues/internal/features/users/service"
 	users_transport_http "N1ktarchik/Board_of_issues/internal/features/users/transport/http"
 
 	desks_repository "N1ktarchik/Board_of_issues/internal/features/desks/repository"
+	desks_storage "N1ktarchik/Board_of_issues/internal/features/desks/repository/postgres"
+	desks_cache "N1ktarchik/Board_of_issues/internal/features/desks/repository/redis"
 	desks_service "N1ktarchik/Board_of_issues/internal/features/desks/service"
 	desks_transport_http "N1ktarchik/Board_of_issues/internal/features/desks/transport/http"
 
@@ -17,7 +21,9 @@ import (
 
 	"N1ktarchik/Board_of_issues/internal/core/logger"
 	"N1ktarchik/Board_of_issues/internal/core/repository/postgres"
+	"N1ktarchik/Board_of_issues/internal/core/repository/redis"
 	"N1ktarchik/Board_of_issues/internal/core/transport/server"
+	"N1ktarchik/Board_of_issues/internal/core/transport/server/middleware"
 	"context"
 	"log/slog"
 	"os"
@@ -28,7 +34,7 @@ import (
 )
 
 // @title           Board Of Issues API
-// @version         2.0
+// @version         2.1
 // @description     REST API for the Board of Issues task management system.
 // @contact.name    Nikita Kleymenov
 // @contact.url     https://t.me/n1ktarchik
@@ -38,6 +44,11 @@ import (
 // @in                          header
 // @name                        Authorization
 // @description                 Enter the token in the format: Bearer <JWT_TOKEN>
+
+// @securityDefinitions.apikey 	IdempotencyKey
+// @in                          header
+// @name                        X-Req-Key
+// @description                 An idempotent key to prevent duplicates (UUID)
 
 // @host            localhost:8080
 // @BasePath        /
@@ -59,14 +70,41 @@ func main() {
 	}
 
 	connStr := postgres.GetPostgresValues()
-	config := postgres.NewDatabaseConfig(connStr, 25, 5, 30*time.Minute, 5*time.Minute, 1*time.Minute)
+	config := postgres.NewPostgresConfig(connStr, 25, 5, 30*time.Minute, 5*time.Minute, 1*time.Minute)
 	pool, err := postgres.CreatePool(context.Background(), config, log)
 	if err != nil {
 		log.Error("failed to initialize database pool", slog.Any("err", err))
 		panic(err)
 	}
 
-	log.Info("database connection pool established")
+	log.Info("postgres connection pool established")
+
+	rHost := os.Getenv("REDIS_HOST")
+	if rHost == "" {
+		rHost = "localhost"
+	}
+
+	rPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
+	if rPort == 0 {
+		rPort = 6379
+	}
+
+	rDB, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
+	rPass := os.Getenv("REDIS_PASSWORD")
+
+	redisCfg := redis.NewRedisConfig(rHost, rPort, rPass, rDB)
+	rClient, err := redis.New(redisCfg, log)
+	if err != nil {
+		log.Error("failed to initialize redis client", slog.Any("err", err))
+		panic(err)
+	}
+	defer func() {
+		if err := rClient.Close(); err != nil {
+			log.Error("failed to close redis client", slog.Any("err", err))
+		}
+	}()
+
+	log.Info("redis connection pool established")
 
 	jwt_liveTime := os.Getenv("JWT_LIVE_TIME")
 	jwtLiveTimeMinutes := 15
@@ -82,12 +120,15 @@ func main() {
 	}
 
 	authService := auth_service.CreateJWTService(secret, log, jwtLiveTimeMinutes)
+	cacheRepository := cache.NewCacheRepository(rClient, log)
 
 	usersRepository := users_repository.NewUsersRepository(pool, log)
 	usersService := users_service.NewUsersService(usersRepository, authService, log)
 	usersTransportHttp := users_transport_http.NewUsersHandler(usersService, log)
 
-	desksRepository := desks_repository.NewDesksRepository(pool, log)
+	desksStorage := desks_storage.NewDesksStorage(pool, log)
+	desksCache := desks_cache.NewDesksCache(rClient, log)
+	desksRepository := desks_repository.NewDesksRepository(desksStorage, desksCache)
 	desksService := desks_service.NewDesksService(desksRepository, log)
 	desksTransportHttp := desks_transport_http.NewDesksHandler(desksService, log)
 
@@ -95,7 +136,7 @@ func main() {
 	tasksService := tasks_service.NewTasksService(tasksRepository, log)
 	tasksTransportHttp := tasks_transport_http.NewTasksHandler(tasksService, log)
 
-	mw := server.NewMiddleWare(authService, log)
+	mw := middleware.NewMiddleWare(authService, cacheRepository, log)
 	srv := server.NewServer(log)
 	srv.RegisterSwagger()
 	r := srv.Router
@@ -105,18 +146,19 @@ func main() {
 
 	api := r.PathPrefix("/").Subrouter()
 	api.Use(mw.AuthMiddleware)
+	api.Use(mw.RateLimitMiddleware)
 
-	api.HandleFunc("/users/update", usersTransportHttp.ChangesUserData).Methods("PATCH")
+	api.HandleFunc("/users", usersTransportHttp.ChangesUserData).Methods("PATCH")
 
-	api.HandleFunc("/desks/create", desksTransportHttp.CreateDesk).Methods("POST")
+	api.Handle("/desks", mw.IdempotencyMiddleware(http.HandlerFunc(desksTransportHttp.CreateDesk))).Methods("POST")
 	api.HandleFunc("/desks/{id}", desksTransportHttp.DeleteDesk).Methods("DELETE")
-	api.HandleFunc("/desks/my", desksTransportHttp.GetUsersDesks).Methods("GET")
-	api.HandleFunc("/desks/connect", desksTransportHttp.ConnectUserToDesk).Methods("POST")
-	api.HandleFunc("/desks/update", desksTransportHttp.ChangeDeskData).Methods("PATCH")
+	api.HandleFunc("/desks", desksTransportHttp.GetUsersDesks).Methods("GET")
+	api.Handle("/desks/connect", mw.IdempotencyMiddleware(http.HandlerFunc(desksTransportHttp.ConnectUserToDesk))).Methods("POST")
+	api.HandleFunc("/desks", desksTransportHttp.ChangeDeskData).Methods("PATCH")
 
-	api.HandleFunc("/tasks/create", tasksTransportHttp.CreateTask).Methods("POST")
+	api.Handle("/tasks", mw.IdempotencyMiddleware(http.HandlerFunc(tasksTransportHttp.CreateTask))).Methods("POST")
 	api.HandleFunc("/tasks/{id}/complete", tasksTransportHttp.CompleteTask).Methods("PATCH")
-	api.HandleFunc("/tasks/update", tasksTransportHttp.ChangeTaskData).Methods("PATCH")
+	api.HandleFunc("/tasks", tasksTransportHttp.ChangeTaskData).Methods("PATCH")
 	api.HandleFunc("/tasks/{id}", tasksTransportHttp.DeleteTask).Methods("DELETE")
 	api.HandleFunc("/tasks/all/{deskId}", tasksTransportHttp.GetTasksFromOneDesk).Methods("GET")
 	api.HandleFunc("/tasks/{taskId}", tasksTransportHttp.GetTaskByID).Methods("GET")

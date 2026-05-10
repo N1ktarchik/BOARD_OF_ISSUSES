@@ -16,19 +16,21 @@ import (
 // @Summary             Create a task
 // @Description         Create a new task in a specific desk
 // @Tags                tasks
-// @Security            ApiKeyAuth
+// @Security            ApiKeyAuth,IdempotencyKey
 // @Accept              json
 // @Produce             json
 // @Param               request body TaskRequestDTO true "Task Info"
+// @Param 				X-Req-Key header string true "Unique idempotency key (UUID) to prevent duplicate processing"
+// @Param 				Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success             201 {object} domain.Task "Created Task"
 // @Failure             400 {object} resp.ErrorResponse "Possible: task_name_too_short, invalid_desk_id"
 // @Failure             401 {object} resp.ErrorResponse "unauthorized"
 // @Failure             404 {object} resp.ErrorResponse "desk_not_found"
 // @Failure             500 {object} resp.ErrorResponse "internal_server_error"
-// @Router              /tasks/create [post]
+// @Router              /tasks [post]
 func (h *TasksHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 
-	h.log.Info("new request", slog.String("path", "/tasks/create"))
+	h.log.Info("new request", slog.String("path", "/tasks"))
 
 	ctx := r.Context()
 	authorIdStr, ok := domain.GetUserID(ctx)
@@ -53,9 +55,11 @@ func (h *TasksHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	task.Done = false
-	task.AuthorId = authorUUID
 
-	saveTask, err := h.tasksService.CreateTask(ctx, task.ToServiceTask())
+	serviceTask := task.ToServiceTask()
+	serviceTask.AuthorId = authorUUID
+
+	saveTask, err := h.tasksService.CreateTask(ctx, serviceTask)
 	if err != nil {
 		h.log.Error("create task failed: service error",
 			slog.Any("err", err), slog.Any("author_id", authorUUID))

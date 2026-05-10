@@ -19,11 +19,212 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/desks": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all desks where current user is a member or owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "desks"
+                ],
+                "summary": "Get my desks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved list of desks",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: invalid_user_id, bad_request",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth,IdempotencyKey": []
+                    }
+                ],
+                "description": "Create a new board for tasks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "desks"
+                ],
+                "summary": "Create a desk",
+                "parameters": [
+                    {
+                        "description": "Desk Info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique idempotency key (UUID) to prevent duplicate processing",
+                        "name": "X-Req-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully created desk",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: desk_name_too_short, invalid_data",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update desk name or password (must be owner)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "desks"
+                ],
+                "summary": "Update desk info",
+                "parameters": [
+                    {
+                        "description": "New desk data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskUpdateRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated desk information",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: invalid_uuid, bad_request",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "not_an_owner",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "desk_not_found",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/desks/connect": {
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "ApiKeyAuth,IdempotencyKey": []
                     }
                 ],
                 "description": "Connect current user to a desk using desk password",
@@ -44,8 +245,22 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
+                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskConnectRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique idempotency key (UUID) to prevent duplicate processing",
+                        "name": "X-Req-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -91,181 +306,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/desks/create": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create a new board for tasks",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "desks"
-                ],
-                "summary": "Create a desk",
-                "parameters": [
-                    {
-                        "description": "Desk Info",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Successfully created desk",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: desk_name_too_short, invalid_data",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/desks/my": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get all desks where current user is a member or owner",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "desks"
-                ],
-                "summary": "Get my desks",
-                "responses": {
-                    "200": {
-                        "description": "Successfully retrieved list of desks",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: invalid_user_id, bad_request",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/desks/update": {
-            "patch": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Update desk name or password (must be owner)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "desks"
-                ],
-                "summary": "Update desk info",
-                "parameters": [
-                    {
-                        "description": "New desk data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully updated desk information",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Desk"
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: invalid_uuid, bad_request",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "not_an_owner",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "desk_not_found",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/desks/{id}": {
             "delete": {
                 "security": [
@@ -292,6 +332,13 @@ const docTemplate = `{
                         "description": "DESK ID",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -448,6 +495,157 @@ const docTemplate = `{
                 }
             }
         },
+        "/tasks": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth,IdempotencyKey": []
+                    }
+                ],
+                "description": "Create a new task in a specific desk",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Create a task",
+                "parameters": [
+                    {
+                        "description": "Task Info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_tasks_transport_http.TaskRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique idempotency key (UUID) to prevent duplicate processing",
+                        "name": "X-Req-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created Task",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: task_name_too_short, invalid_desk_id",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "desk_not_found",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update task name, description or deadline",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Update task",
+                "parameters": [
+                    {
+                        "description": "New task data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_tasks_transport_http.UpdateTaskRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated task",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Possible: invalid_deadline_format, task_name_too_short",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "not_a_desk_member",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "task_not_found",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tasks/all/{deskId}": {
             "get": {
                 "security": [
@@ -495,6 +693,13 @@ const docTemplate = `{
                         "description": "Filter by task status (true/false)",
                         "name": "done",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -540,138 +745,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/tasks/create": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create a new task in a specific desk",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tasks"
-                ],
-                "summary": "Create a task",
-                "parameters": [
-                    {
-                        "description": "Task Info",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_tasks_transport_http.TaskRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created Task",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task"
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: task_name_too_short, invalid_desk_id",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "desk_not_found",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/tasks/update": {
-            "patch": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Update task name, description or deadline",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tasks"
-                ],
-                "summary": "Update task",
-                "parameters": [
-                    {
-                        "description": "New task data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_tasks_transport_http.UpdateTaskRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Updated task",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_domain.Task"
-                        }
-                    },
-                    "400": {
-                        "description": "Possible: invalid_deadline_format, task_name_too_short",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "not_a_desk_member",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "task_not_found",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "$ref": "#/definitions/N1ktarchik_Board_of_issues_internal_core_transport_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/tasks/{id}": {
             "delete": {
                 "security": [
@@ -698,6 +771,13 @@ const docTemplate = `{
                         "description": "TASK ID",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -770,6 +850,13 @@ const docTemplate = `{
                         "description": "TASK ID",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -849,6 +936,13 @@ const docTemplate = `{
                         "name": "taskId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -891,7 +985,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/update": {
+        "/users": {
             "patch": {
                 "security": [
                     {
@@ -918,6 +1012,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_features_users_transport_http.UsersRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1079,24 +1180,42 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_features_desks_transport_http.DeskConnectRequestDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "mysecretpassword"
+                }
+            }
+        },
         "internal_features_desks_transport_http.DeskRequestDTO": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string",
-                    "example": "2023-01-01T00:00:00Z"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "636e856-e12b-56d9-f987-333222561234"
-                },
                 "name": {
                     "type": "string",
                     "example": "My Desk"
                 },
-                "owner_id": {
+                "password": {
                     "type": "string",
-                    "example": "832t758-a12g-47y9-i999-123456789098"
+                    "example": "mysecretpassword"
+                }
+            }
+        },
+        "internal_features_desks_transport_http.DeskUpdateRequestDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "My Desk"
                 },
                 "password": {
                     "type": "string",
@@ -1107,14 +1226,6 @@ const docTemplate = `{
         "internal_features_tasks_transport_http.TaskRequestDTO": {
             "type": "object",
             "properties": {
-                "author_id": {
-                    "type": "string",
-                    "example": "636e856-e12b-56d9-f987-333222561234"
-                },
-                "created_at": {
-                    "type": "string",
-                    "example": "2023-10-10T10:00:00Z"
-                },
                 "deadline": {
                     "type": "string",
                     "example": "2023-10-10T10:00:00Z"
@@ -1126,10 +1237,6 @@ const docTemplate = `{
                 "desk_id": {
                     "type": "string",
                     "example": "832t758-a12g-47y9-i999-123456789098"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "123e4567-e89b-12d3-a456-426614174000"
                 },
                 "name": {
                     "type": "string",
@@ -1144,10 +1251,6 @@ const docTemplate = `{
         "internal_features_tasks_transport_http.UpdateTaskRequestDTO": {
             "type": "object",
             "properties": {
-                "author_id": {
-                    "type": "string",
-                    "example": "636e856-e12b-56d9-f987-333222561234"
-                },
                 "deadline": {
                     "type": "string",
                     "example": "2023-10-10T10:00:00Z"
@@ -1194,13 +1297,19 @@ const docTemplate = `{
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
+        },
+        "IdempotencyKey": {
+            "description": "An idempotent key to prevent duplicates (UUID)",
+            "type": "apiKey",
+            "name": "X-Req-Key",
+            "in": "header"
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "2.0",
+	Version:          "2.1",
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},

@@ -58,17 +58,17 @@ func (mr *MockDeskRepositoryMockRecorder) ChangeDesksData(ctx, deskUpdate, reque
 }
 
 // ConnectUserToDesk mocks base method.
-func (m *MockDeskRepository) ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID) error {
+func (m *MockDeskRepository) ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID, password string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConnectUserToDesk", ctx, userID, deskID)
+	ret := m.ctrl.Call(m, "ConnectUserToDesk", ctx, userID, deskID, password)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConnectUserToDesk indicates an expected call of ConnectUserToDesk.
-func (mr *MockDeskRepositoryMockRecorder) ConnectUserToDesk(ctx, userID, deskID any) *gomock.Call {
+func (mr *MockDeskRepositoryMockRecorder) ConnectUserToDesk(ctx, userID, deskID, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConnectUserToDesk", reflect.TypeOf((*MockDeskRepository)(nil).ConnectUserToDesk), ctx, userID, deskID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConnectUserToDesk", reflect.TypeOf((*MockDeskRepository)(nil).ConnectUserToDesk), ctx, userID, deskID, password)
 }
 
 // CreateDesk mocks base method.

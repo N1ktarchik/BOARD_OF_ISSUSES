@@ -1,4 +1,4 @@
-package repository
+package postgres
 
 import (
 	"N1ktarchik/Board_of_issues/internal/core/domain"
@@ -9,19 +9,19 @@ import (
 	"github.com/google/uuid"
 )
 
-func (r *DesksRepository) GetAllUsersDesks(ctx context.Context, userUUID uuid.UUID) ([]domain.Desk, error) {
-	r.log.Info("fetching all desks for user", slog.Any("userID", userUUID))
+func (s *DesksStorage) GetAllUsersDesks(ctx context.Context, userUUID uuid.UUID) ([]domain.Desk, error) {
+	s.log.Info("fetching all desks for user", slog.Any("userID", userUUID))
 
 	query := `
         SELECT d.id, d.name, d.password, d.owner_id, d.created_at 
         FROM desks d
-        JOIN desks_users du ON d.id = du.desk_id
+        JOIN desk_members du ON d.id = du.desk_id
         WHERE du.user_id = $1
         ORDER BY d.created_at DESC`
 
-	rows, err := r.pool.Query(ctx, query, userUUID)
+	rows, err := s.pool.Query(ctx, query, userUUID)
 	if err != nil {
-		r.log.Error("failed to query desks", slog.Any("userID", userUUID), slog.Any("err", err))
+		s.log.Error("failed to query desks", slog.Any("userID", userUUID), slog.Any("err", err))
 		return nil, core_errors.ServerError()
 	}
 	defer rows.Close()
@@ -33,7 +33,7 @@ func (r *DesksRepository) GetAllUsersDesks(ctx context.Context, userUUID uuid.UU
 
 		err := rows.Scan(&d.Id, &d.Name, &d.Password, &d.OwnerId, &d.Created_at)
 		if err != nil {
-			r.log.Error("failed to scan desk row", slog.Any("err", err))
+			s.log.Error("failed to scan desk row", slog.Any("err", err))
 			return nil, core_errors.ServerError()
 		}
 
@@ -44,6 +44,6 @@ func (r *DesksRepository) GetAllUsersDesks(ctx context.Context, userUUID uuid.UU
 		return nil, core_errors.ServerError()
 	}
 
-	r.log.Info("successfully fetched desks", slog.Int("count", len(desks)))
+	s.log.Info("successfully fetched desks", slog.Int("count", len(desks)))
 	return desks, nil
 }

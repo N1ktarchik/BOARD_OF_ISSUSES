@@ -19,15 +19,16 @@ import (
 // @Accept                  json
 // @Produce                 json
 // @Param                   request body UpdateTaskRequestDTO true "New task data"
+// @Param 					Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success                 200 {object} domain.Task "Updated task"
 // @Failure                 400 {object} resp.ErrorResponse "Possible: invalid_deadline_format, task_name_too_short"
 // @Failure                 401 {object} resp.ErrorResponse "unauthorized"
 // @Failure                 403 {object} resp.ErrorResponse "not_a_desk_member"
 // @Failure                 404 {object} resp.ErrorResponse "task_not_found"
 // @Failure                 500 {object} resp.ErrorResponse "internal_server_error"
-// @Router                  /tasks/update [patch]
+// @Router                  /tasks [patch]
 func (h *TasksHandler) ChangeTaskData(w http.ResponseWriter, r *http.Request) {
-	h.log.Info("new request", slog.String("path", "/tasks/update"))
+	h.log.Info("new request", slog.String("path", "/tasks"))
 
 	ctx := r.Context()
 	userIdStr, ok := domain.GetUserID(ctx)
@@ -50,9 +51,11 @@ func (h *TasksHandler) ChangeTaskData(w http.ResponseWriter, r *http.Request) {
 		resp.RespondWithError(w, err)
 		return
 	}
-	task.AuthorId = userUUID
 
-	saveTask, err := h.tasksService.UpdateTask(ctx, task.ToServiceUpdateTask())
+	serviceTask := task.ToServiceUpdateTask()
+	serviceTask.AuthorId = userUUID
+
+	saveTask, err := h.tasksService.UpdateTask(ctx, serviceTask)
 	if err != nil {
 		h.log.Error("update task failed", slog.Any("err", err))
 		resp.RespondWithError(w, err)

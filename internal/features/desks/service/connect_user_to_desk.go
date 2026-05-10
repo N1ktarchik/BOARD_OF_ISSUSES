@@ -8,7 +8,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *DesksService) ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID) error {
+func (s *DesksService) ConnectUserToDesk(ctx context.Context, userID,
+	deskID uuid.UUID, password string) error {
+
 	s.log.Info("connecting user to desk", slog.Any("deskID", deskID), slog.Any("userID", userID))
 
 	if userID == uuid.Nil {
@@ -20,8 +22,8 @@ func (s *DesksService) ConnectUserToDesk(ctx context.Context, userID, deskID uui
 		s.log.Warn("connect user to desk failed: empty desk id")
 		return core_errors.BadRequest()
 	}
-	
-	if err := s.deskRepository.ConnectUserToDesk(ctx, userID, deskID); err != nil {
+
+	if err := s.deskRepository.ConnectUserToDesk(ctx, userID, deskID, password); err != nil {
 		s.log.Error("repository connect user to desk failed", slog.Any("deskID", deskID),
 			slog.Any("userID", userID), slog.Any("err", err))
 

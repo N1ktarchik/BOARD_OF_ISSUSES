@@ -16,17 +16,19 @@ import (
 // @Summary             Create a desk
 // @Description         Create a new board for tasks
 // @Tags                desks
-// @Security            ApiKeyAuth
+// @Security            ApiKeyAuth,IdempotencyKey
 // @Accept              json
 // @Produce             json
 // @Param               request body DeskRequestDTO true "Desk Info"
+// @Param 				X-Req-Key header string true "Unique idempotency key (UUID) to prevent duplicate processing"
+// @Param 				Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success             201 {object} domain.Desk "Successfully created desk"
 // @Failure             400 {object} resp.ErrorResponse "Possible: desk_name_too_short, invalid_data"
 // @Failure             401 {object} resp.ErrorResponse "unauthorized"
 // @Failure             500 {object} resp.ErrorResponse "internal_server_error"
-// @Router              /desks/create [post]
+// @Router              /desks [post]
 func (h *DesksHandler) CreateDesk(w http.ResponseWriter, r *http.Request) {
-	h.log.Info("new request", slog.String("path", "/desks/create"))
+	h.log.Info("new request", slog.String("path", "/desks"))
 
 	ctx := r.Context()
 	userIdStr, ok := domain.GetUserID(ctx)
@@ -50,9 +52,10 @@ func (h *DesksHandler) CreateDesk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deskDTO.OwnerId = userUUID
+	serviceDesk := deskDTO.ToServiceDesk()
+	serviceDesk.OwnerId = userUUID
 
-	saveDesk, err := h.desksService.CreateDesk(ctx, deskDTO.ToServiceDesk())
+	saveDesk, err := h.desksService.CreateDesk(ctx, serviceDesk)
 	if err != nil {
 		h.log.Error("service create desk failed", slog.Any("userID", userUUID), slog.Any("err", err))
 		resp.RespondWithError(w, err)
