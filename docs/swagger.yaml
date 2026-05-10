@@ -84,19 +84,31 @@ definitions:
         example: any JWT-Token
         type: string
     type: object
+  internal_features_desks_transport_http.DeskConnectRequestDTO:
+    properties:
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      password:
+        example: mysecretpassword
+        type: string
+    type: object
   internal_features_desks_transport_http.DeskRequestDTO:
     properties:
-      created_at:
-        example: "2023-01-01T00:00:00Z"
-        type: string
-      id:
-        example: 636e856-e12b-56d9-f987-333222561234
-        type: string
       name:
         example: My Desk
         type: string
-      owner_id:
-        example: 832t758-a12g-47y9-i999-123456789098
+      password:
+        example: mysecretpassword
+        type: string
+    type: object
+  internal_features_desks_transport_http.DeskUpdateRequestDTO:
+    properties:
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: My Desk
         type: string
       password:
         example: mysecretpassword
@@ -104,12 +116,6 @@ definitions:
     type: object
   internal_features_tasks_transport_http.TaskRequestDTO:
     properties:
-      author_id:
-        example: 636e856-e12b-56d9-f987-333222561234
-        type: string
-      created_at:
-        example: "2023-10-10T10:00:00Z"
-        type: string
       deadline:
         example: "2023-10-10T10:00:00Z"
         type: string
@@ -118,9 +124,6 @@ definitions:
         type: string
       desk_id:
         example: 832t758-a12g-47y9-i999-123456789098
-        type: string
-      id:
-        example: 123e4567-e89b-12d3-a456-426614174000
         type: string
       name:
         example: Task name
@@ -131,9 +134,6 @@ definitions:
     type: object
   internal_features_tasks_transport_http.UpdateTaskRequestDTO:
     properties:
-      author_id:
-        example: 636e856-e12b-56d9-f987-333222561234
-        type: string
       deadline:
         example: "2023-10-10T10:00:00Z"
         type: string
@@ -219,7 +219,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_features_desks_transport_http.DeskRequestDTO'
+          $ref: '#/definitions/internal_features_desks_transport_http.DeskUpdateRequestDTO'
       - description: 'Bearer token for authentication (format: Bearer <token>)'
         in: header
         name: Authorization
@@ -365,7 +365,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_features_desks_transport_http.DeskRequestDTO'
+          $ref: '#/definitions/internal_features_desks_transport_http.DeskConnectRequestDTO'
       - description: Unique idempotency key (UUID) to prevent duplicate processing
         in: header
         name: X-Req-Key
@@ -542,6 +542,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/internal_features_tasks_transport_http.TaskRequestDTO'
+      - description: Unique idempotency key (UUID) to prevent duplicate processing
+        in: header
+        name: X-Req-Key
+        required: true
+        type: string
+      - description: 'Bearer token for authentication (format: Bearer <token>)'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:

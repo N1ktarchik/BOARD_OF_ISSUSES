@@ -10,6 +10,8 @@ import (
 	resp "N1ktarchik/Board_of_issues/internal/core/transport/response"
 	"log/slog"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 // ConnectUserToDesk        godoc
@@ -19,7 +21,7 @@ import (
 // @Security            	ApiKeyAuth,IdempotencyKey
 // @Accept                  json
 // @Produce                 json
-// @Param                   request body DeskRequestDTO true "Desk ID and Password"
+// @Param                   request body DeskConnectRequestDTO true "Desk ID and Password"
 // @Param 					X-Req-Key header string true "Unique idempotency key (UUID) to prevent duplicate processing"
 // @Param					Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success                 201 {object} map[string]string "message: you have connected to desk"
@@ -41,14 +43,21 @@ func (h *DesksHandler) ConnectUserToDesk(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	deskDTO := &DeskRequestDTO{}
+	deskDTO := &DeskConnectRequestDTO{}
 	if err := req.DecodeAndValidateRequest(r, deskDTO); err != nil {
 		h.log.Error("decode and validate failed", slog.Any("err", err))
 		resp.RespondWithError(w, err)
 		return
 	}
 
-	if err := h.desksService.ConnectUserToDesk(ctx, deskDTO.OwnerId, deskDTO.Id); err != nil {
+	userUUID, err := uuid.Parse(userId)
+	if err != nil {
+		h.log.Debug("parse userID failed", slog.Any("err", err))
+		resp.RespondWithError(w, errors.BadRequest())
+		return
+	}
+
+	if err := h.desksService.ConnectUserToDesk(ctx, userUUID, deskDTO.Id, deskDTO.Password); err != nil {
 		h.log.Error("service connect user to desk failed",
 			slog.Any("userID", userId), slog.Any("deskID", deskDTO.Id), slog.Any("err", err))
 

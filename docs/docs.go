@@ -169,7 +169,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
+                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskUpdateRequestDTO"
                         }
                     },
                     {
@@ -245,7 +245,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskRequestDTO"
+                            "$ref": "#/definitions/internal_features_desks_transport_http.DeskConnectRequestDTO"
                         }
                     },
                     {
@@ -522,6 +522,20 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_features_tasks_transport_http.TaskRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique idempotency key (UUID) to prevent duplicate processing",
+                        "name": "X-Req-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authentication (format: Bearer \u003ctoken\u003e)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1166,24 +1180,42 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_features_desks_transport_http.DeskConnectRequestDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "mysecretpassword"
+                }
+            }
+        },
         "internal_features_desks_transport_http.DeskRequestDTO": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string",
-                    "example": "2023-01-01T00:00:00Z"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "636e856-e12b-56d9-f987-333222561234"
-                },
                 "name": {
                     "type": "string",
                     "example": "My Desk"
                 },
-                "owner_id": {
+                "password": {
                     "type": "string",
-                    "example": "832t758-a12g-47y9-i999-123456789098"
+                    "example": "mysecretpassword"
+                }
+            }
+        },
+        "internal_features_desks_transport_http.DeskUpdateRequestDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "My Desk"
                 },
                 "password": {
                     "type": "string",
@@ -1194,14 +1226,6 @@ const docTemplate = `{
         "internal_features_tasks_transport_http.TaskRequestDTO": {
             "type": "object",
             "properties": {
-                "author_id": {
-                    "type": "string",
-                    "example": "636e856-e12b-56d9-f987-333222561234"
-                },
-                "created_at": {
-                    "type": "string",
-                    "example": "2023-10-10T10:00:00Z"
-                },
                 "deadline": {
                     "type": "string",
                     "example": "2023-10-10T10:00:00Z"
@@ -1213,10 +1237,6 @@ const docTemplate = `{
                 "desk_id": {
                     "type": "string",
                     "example": "832t758-a12g-47y9-i999-123456789098"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "123e4567-e89b-12d3-a456-426614174000"
                 },
                 "name": {
                     "type": "string",
@@ -1231,10 +1251,6 @@ const docTemplate = `{
         "internal_features_tasks_transport_http.UpdateTaskRequestDTO": {
             "type": "object",
             "properties": {
-                "author_id": {
-                    "type": "string",
-                    "example": "636e856-e12b-56d9-f987-333222561234"
-                },
                 "deadline": {
                     "type": "string",
                     "example": "2023-10-10T10:00:00Z"

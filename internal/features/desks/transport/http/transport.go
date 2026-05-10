@@ -20,7 +20,7 @@ type DesksService interface {
 
 	GetAllUsersDesks(ctx context.Context, userID string) ([]domain.Desk, error)
 
-	ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID) error
+	ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID, password string) error
 }
 
 func NewDesksHandler(desksService DesksService, log *slog.Logger) *DesksHandler {

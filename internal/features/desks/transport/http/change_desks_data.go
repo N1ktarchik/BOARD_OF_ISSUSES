@@ -18,7 +18,7 @@ import (
 // @Security                ApiKeyAuth
 // @Accept                  json
 // @Produce                 json
-// @Param                   request body DeskRequestDTO true "New desk data"
+// @Param                   request body DeskUpdateRequestDTO true "New desk data"
 // @Param 					Authorization header string true "Bearer token for authentication (format: Bearer <token>)"
 // @Success                 200 {object} domain.Desk "Successfully updated desk information"
 // @Failure                 400 {object} resp.ErrorResponse "Possible: invalid_uuid, bad_request"
@@ -39,7 +39,7 @@ func (h *DesksHandler) ChangeDeskData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deskDTO := &DeskRequestDTO{}
+	deskDTO := &DeskUpdateRequestDTO{}
 	if err := request.DecodeAndValidateRequest(r, deskDTO); err != nil {
 		h.log.Error("decode and validate failed", slog.Any("err", err))
 
@@ -49,14 +49,16 @@ func (h *DesksHandler) ChangeDeskData(w http.ResponseWriter, r *http.Request) {
 
 	userUUID, err := uuid.Parse(userIdStr)
 	if err != nil {
-		h.log.Warn("change desk data failed: error parsing user id",
+		h.log.Debug("change desk data failed: error parsing user id",
 			slog.Any("deskID", deskDTO.Id), slog.Any("err", err))
 
 		resp.RespondWithError(w, core_errors.BadRequest())
 		return
 	}
 
-	saveDesk, err := h.desksService.ChangeDesksData(ctx, deskDTO.ToServiceDesk(), userUUID)
+	serviceDesk := deskDTO.ToServiceUpdateDesk()
+
+	saveDesk, err := h.desksService.ChangeDesksData(ctx, serviceDesk, userUUID)
 	if err != nil {
 		h.log.Error("service change desk data failed", slog.Any("ownerID", userUUID),
 			slog.Any("deskID", deskDTO.Id), slog.Any("err", err))

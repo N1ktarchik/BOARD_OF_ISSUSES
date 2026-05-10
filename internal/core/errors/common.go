@@ -19,7 +19,7 @@ func (e *ErrorApp) StatusCode() int {
 	switch e.Code {
 	case "TOKEN_NOT_VALID", "JWT_METHOD_NOT_VALID", "UNAUTHORIZED":
 		return http.StatusUnauthorized
-	case "USER_HAVE_NOT_ACCES", "USER_IS_NOT_OWNER", "USER_IS_NOT_OWNER_OF_TASK":
+	case "USER_HAVE_NOT_ACCES", "USER_IS_NOT_OWNER", "USER_IS_NOT_OWNER_OF_TASK", "FORBIDDEN":
 		return http.StatusForbidden
 	case "INVALID_PASSWORD", "PASSWORD_IS_SHORT", "PASSWORD_IS_LONG", "BAD_REQUEST":
 		return http.StatusBadRequest
@@ -166,5 +166,12 @@ func TooManyRequests(userID string) *ErrorApp {
 	return &ErrorApp{
 		Code:    "TOO_MANY_REQUESTS",
 		Message: fmt.Sprintf("User with id %s has made too many requests", userID),
+	}
+}
+
+func Forbidden() *ErrorApp {
+	return &ErrorApp{
+		Code:    "FORBIDDEN",
+		Message: "you have not access to this resource",
 	}
 }

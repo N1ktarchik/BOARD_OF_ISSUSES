@@ -20,7 +20,7 @@ type DeskRepository interface {
 	ChangeDesksData(ctx context.Context, deskUpdate *domain.Desk, requesterID uuid.UUID) (*domain.Desk, error)
 	DeleteDesk(ctx context.Context, userUUID, deskUUID uuid.UUID) error
 
-	ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID) error
+	ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID, password string) error
 
 	GetAllUsersDesks(ctx context.Context, userUUID uuid.UUID) ([]domain.Desk, error)
 }

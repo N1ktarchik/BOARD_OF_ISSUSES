@@ -167,9 +167,9 @@ func TestConnectUserToDesk_Success(t *testing.T) {
 	userID := uuid.New()
 	deskID := uuid.New()
 
-	repo.EXPECT().ConnectUserToDesk(ctx, userID, deskID).Return(nil)
+	repo.EXPECT().ConnectUserToDesk(ctx, userID, deskID, "password").Return(nil)
 
-	err := svc.ConnectUserToDesk(ctx, userID, deskID)
+	err := svc.ConnectUserToDesk(ctx, userID, deskID, "password")
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -180,12 +180,12 @@ func TestConnectUserToDesk_EmptyIDs(t *testing.T) {
 	svc, _, ctx := initTest(t)
 	validID := uuid.New()
 
-	err1 := svc.ConnectUserToDesk(ctx, uuid.Nil, validID)
+	err1 := svc.ConnectUserToDesk(ctx, uuid.Nil, validID, "password")
 	if err1 == nil {
 		t.Error("expected error for empty user id")
 	}
 
-	err2 := svc.ConnectUserToDesk(ctx, validID, uuid.Nil)
+	err2 := svc.ConnectUserToDesk(ctx, validID, uuid.Nil, "password")
 	if err2 == nil {
 		t.Error("expected error for empty desk id")
 	}

@@ -51,9 +51,11 @@ func (h *TasksHandler) ChangeTaskData(w http.ResponseWriter, r *http.Request) {
 		resp.RespondWithError(w, err)
 		return
 	}
-	task.AuthorId = userUUID
 
-	saveTask, err := h.tasksService.UpdateTask(ctx, task.ToServiceUpdateTask())
+	serviceTask := task.ToServiceUpdateTask()
+	serviceTask.AuthorId = userUUID
+
+	saveTask, err := h.tasksService.UpdateTask(ctx, serviceTask)
 	if err != nil {
 		h.log.Error("update task failed", slog.Any("err", err))
 		resp.RespondWithError(w, err)

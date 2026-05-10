@@ -55,9 +55,11 @@ func (h *TasksHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	task.Done = false
-	task.AuthorId = authorUUID
 
-	saveTask, err := h.tasksService.CreateTask(ctx, task.ToServiceTask())
+	serviceTask := task.ToServiceTask()
+	serviceTask.AuthorId = authorUUID
+
+	saveTask, err := h.tasksService.CreateTask(ctx, serviceTask)
 	if err != nil {
 		h.log.Error("create task failed: service error",
 			slog.Any("err", err), slog.Any("author_id", authorUUID))

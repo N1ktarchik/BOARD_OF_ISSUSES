@@ -52,8 +52,9 @@ func (r *DesksRepository) DeleteDesk(ctx context.Context, userUUID, deskUUID uui
 	return nil
 }
 
-func (r *DesksRepository) ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID) error {
-	if err := r.storage.ConnectUserToDesk(ctx, userID, deskID); err != nil {
+func (r *DesksRepository) ConnectUserToDesk(ctx context.Context, userID, deskID uuid.UUID,
+	password string) error {
+	if err := r.storage.ConnectUserToDesk(ctx, userID, deskID, password); err != nil {
 		return err
 	}
 

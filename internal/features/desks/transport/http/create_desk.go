@@ -52,9 +52,10 @@ func (h *DesksHandler) CreateDesk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deskDTO.OwnerId = userUUID
+	serviceDesk := deskDTO.ToServiceDesk()
+	serviceDesk.OwnerId = userUUID
 
-	saveDesk, err := h.desksService.CreateDesk(ctx, deskDTO.ToServiceDesk())
+	saveDesk, err := h.desksService.CreateDesk(ctx, serviceDesk)
 	if err != nil {
 		h.log.Error("service create desk failed", slog.Any("userID", userUUID), slog.Any("err", err))
 		resp.RespondWithError(w, err)
